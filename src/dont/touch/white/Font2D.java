@@ -1,0 +1,322 @@
+package dont.touch.white;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.opengl.GLES20;
+import android.opengl.Matrix;
+import android.util.Log;
+
+public class Font2D {
+	
+	FloatBuffer vertextBuffer;
+	FloatBuffer textureCoordBuffer;
+	int drawVertex=0;
+	
+	//shader holder
+	int aPositionHolder;
+	int aTextureCoordHolder;
+	int uSamplerHolder;
+	int uObjectMatrixHandler;
+	
+	public ShaderProgram shProg;
+	private Texture texture;
+	
+	public float[] mObjectMatrix = new float[16];
+	public float[] mObjectMVPMatrix = new float[16];
+	
+	
+	
+	public static final String vertexShaderCode = 
+			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
+			 + "attribute vec2 aTextureCoord;	         		   \n" // объявляем входящие данные
+			 + "varying vec2 vTextureCoord;             		   \n" // для передачи во фрагментный шейдер			
+			 +	"uniform mat4 uObjectMatrix;			\n"
+			 + "void main() {                    		   \n"			
+			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
+			 + " vTextureCoord = aTextureCoord;     \n" // вычисление текстурных координат, для текста будем делать до шейдера					
+		+	"}"	;
+		
+	
+	public static final String fragmentShaderCode = 
+			"precision highp float;"
++			"varying vec2 vTextureCoord;                        \n" +
+			"uniform sampler2D uSampler;                 \n"
+		+	"void main() {							\n"
+		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
+		+	"}"	;
+			
+	
+	public void initializeShaderParam() {
+		aPositionHolder = GLES20.glGetAttribLocation(shProg.programHandler, "aPosition");// получаем указатель для переменной программы aPosition
+		aTextureCoordHolder = GLES20.glGetAttribLocation(shProg.programHandler, "aTextureCoord");
+		uSamplerHolder = GLES20.glGetUniformLocation(shProg.programHandler, "uSampler");		
+		uObjectMatrixHandler=GLES20.glGetUniformLocation(shProg.programHandler, "uObjectMatrix");
+		
+		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uSamplerHolder || -1==uObjectMatrixHandler) {
+			Log.d("MyLogs", "Shader atributs or uniforms not found.");
+			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uObjectMatrixHandler);
+		}
+		else { 
+			Log.d("MyLogs", "Shader initialized");
+		}
+	}
+
+	
+	public Font2D(ShaderProgram sP,Texture mTexture,String str) {
+		shProg=sP;	
+		texture=mTexture;
+		drawVertex=6;
+		
+		Matrix.setIdentityM(mObjectMatrix,0);
+						
+		setText(str);		
+		
+		initializeShaderParam();
+	}
+	
+	public void rotate(float angleInDegrees,float x,float y,float z) {
+		Matrix.rotateM(mObjectMatrix, 0, angleInDegrees, x, y,z);	
+	}
+	
+	public void scale(float x,float y,float z) {
+		Matrix.scaleM(mObjectMatrix, 0, x, y, z);
+	}
+
+	public void translate(float x,float y,float z) {
+		Matrix.translateM(mObjectMatrix, 0, x, y, z);
+	}
+	
+	public void draw(float[] mMVPMatrix, float timer) {		
+		
+		 Matrix.setIdentityM(mObjectMVPMatrix, 0);
+		 Matrix.multiplyMM(mObjectMVPMatrix, 0, mMVPMatrix, 0, mObjectMatrix, 0);		 
+		 GLES20.glUniformMatrix4fv(uObjectMatrixHandler, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
+		
+		// GLES20.GL_TEXTURE_2D - по большому счету это как кисть, нужно активировать текстуру и привязать ее к кисти.
+		 GLES20.glActiveTexture(GLES20.GL_TEXTURE0+texture.index); // активируем текстуру, которой собрались рисовать		 
+		 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.id); // прикрепляем текстуру, которой собираемся сейчас рисовать		 
+		 GLES20.glUniform1i(uSamplerHolder, texture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему		 		
+		 		 
+		 GLES20.glVertexAttribPointer(aPositionHolder, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
+		 GLES20.glEnableVertexAttribArray(aPositionHolder);	
+		 
+		 GLES20.glVertexAttribPointer(aTextureCoordHolder, 2, GLES20.GL_FLOAT, false, 8, textureCoordBuffer);
+	     GLES20.glEnableVertexAttribArray(aTextureCoordHolder);
+		 	
+	     GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,drawVertex);
+	     //GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, verticesIndex);
+		
+	}
+	
+	public void setAtlas() {
+		drawVertex=6;
+		
+		// сначала делаем единичный массив который описывает одну букву	
+		float[] unionVFA = {
+				  1, 1,0,
+				 -1, 1,0,
+				 -1,-1,0,
+				  1,-1,0,
+				  1, 1,0,
+				 -1,-1,0			 
+				};
+		
+		ByteBuffer pointVBB = ByteBuffer.allocateDirect(unionVFA.length * 4);
+		pointVBB.order(ByteOrder.nativeOrder());
+		vertextBuffer = pointVBB.asFloatBuffer();
+		vertextBuffer.put(unionVFA);
+		vertextBuffer.position(0); 
+		
+		float[] unionTFA = {						
+				1f,0,
+				0,0,
+				0,1f,
+				1f,1f,
+				1f,0,
+				0,1f				
+				};	
+		
+		ByteBuffer planeTBB = ByteBuffer.allocateDirect(unionTFA.length * 4);
+		planeTBB.order(ByteOrder.nativeOrder());
+		textureCoordBuffer = planeTBB.asFloatBuffer();
+		textureCoordBuffer.put(unionTFA);
+		textureCoordBuffer.position(0);
+		
+	}
+	
+	public void setText(String str) {
+		
+		// логика нанесения текста такая, для каждой буквы задаем 2 треугольника, с 6 вершинами , две из которых одинаковые...
+		// текст определяется текстурными координатами для вершин.
+				
+		drawVertex=str.length()*6;
+		
+		// сначала делаем единичный массив который описывает одну букву	
+		float[] pointVFA = {
+				  1, 1,0,
+				 -1, 1,0,
+				 -1,-1,0,
+				  1,-1,0,
+				  1, 1,0,
+				 -1,-1,0			 
+				};
+		
+		MyMatrix.matrix3dScale(pointVFA, new float[]{1f/str.length(),1f/str.length(),1f});// изменяем размер матрицы по количеству символов в строке
+		float firstMatrixMoveLeft=-(1-1f/str.length());//определяем величину сдвига до крайне левого положения
+		MyMatrix.matrix3dTranslate(pointVFA, new float[]{firstMatrixMoveLeft,0,0}); // сдвигаем в крайнелевое положение
+		
+		float matrixStep=2f/str.length();//определяем шаг сдвига в право для каждой следующей матрицы		
+		float[] tekMatrix=pointVFA.clone(); // задаем текущую матрицу как копию первой
+		float[] unionVFA=pointVFA; // задаем матрицу которая будет объединять все предыдущие, помещаем в нее первую
+		for (int i=0;i<str.length();i++) {
+			MyMatrix.matrix3dTranslate(tekMatrix,new float[]{matrixStep,0,0});// сдвигаем текущую матрицу вправо на длинну матрицы
+			unionVFA=MyMatrix.unionArrays(unionVFA,tekMatrix);// добавляем текущую матрицу к объединяющей матрице
+		}
+		tekMatrix=null;
+		pointVFA=null;								
+		
+				ByteBuffer pointVBB = ByteBuffer.allocateDirect(unionVFA.length * 4);
+				pointVBB.order(ByteOrder.nativeOrder());
+				vertextBuffer = pointVBB.asFloatBuffer();
+				vertextBuffer.put(unionVFA);
+				vertextBuffer.position(0); 		
+												
+		
+		
+		float[] planeTFA = {						
+				1f,0,
+				0,0,
+				0,1f,
+				1f,1f,
+				1f,0,
+				0,1f				
+				};		
+		
+		MyMatrix.matrix2dScale(planeTFA,animationVector);
+		tekMatrix=planeTFA.clone();
+		float[] unionTFA = null;
+		for (int i=0;i<str.length();i++) {
+			String tekSimbol=str.substring(i, i+1);
+			int[] simbolPos = getSimbolPosition(tekSimbol);
+			tekMatrix=planeTFA.clone();	
+			MyMatrix.matrix2dTranslate(tekMatrix,new float[]{animationVector[0]*simbolPos[0],animationVector[1]*simbolPos[1]});
+			if (unionTFA==null) {
+				unionTFA = tekMatrix;
+			} else {
+				unionTFA = MyMatrix.unionArrays(unionTFA, tekMatrix);
+			}			
+		}				
+		
+				ByteBuffer planeTBB = ByteBuffer.allocateDirect(unionTFA.length * 4);
+				planeTBB.order(ByteOrder.nativeOrder());
+				textureCoordBuffer = planeTBB.asFloatBuffer();
+				textureCoordBuffer.put(unionTFA);
+				textureCoordBuffer.position(0);
+		
+	}	
+	
+	
+	
+	
+	
+	
+	// статические методы для генерации текстуры шрифта
+	
+	
+	public static float[] animationVector;
+	public static String[] mFont=new String[] {
+		"ABCDEFGHIJKLMNOP",
+		"QRSTUVWXYZabcdef",
+		"ghijklmnopqrstuv",
+		"wxyz0123456789 #"				
+		};
+	
+	public static int[] getSimbolPosition(String simbol) {
+		for (int i=0;i<mFont.length;i++) {
+			int simIdx = mFont[i].indexOf(simbol);
+			if (simIdx!=-1) return new int[]{simIdx,i};
+		}
+		return new int[]{mFont[0].length(),mFont.length};		
+	}
+	
+	public static Bitmap generateFontAtlas() {
+		int fontWidth=64;// fontWidth x fontHeight - 1 simpol size
+		int fontHeight=64;		
+		
+		
+		int widthBmp=fontWidth*mFont[0].length();
+		int heightBmp=fontHeight*mFont.length;
+		
+		animationVector =new float[]{(float)fontWidth/widthBmp,(float)fontHeight/heightBmp};
+		Log.d("MyLogs", "aX="+animationVector[0]+ " aY="+animationVector[1]);
+		
+		
+		// new bitmap
+		Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
+		Bitmap mBitmap = Bitmap.createBitmap(widthBmp, heightBmp, conf); // this
+										   
+		Canvas mCanvas = new Canvas(mBitmap);
+				
+		Paint mPaint = new Paint();
+		
+		mPaint.setAntiAlias(true);
+		
+		float mSize = determineMaxTextSize("W",fontWidth,fontHeight);// fontWidth x fontHeight - 1 simpol size
+		mPaint.setTextSize(mSize);
+		
+		Rect bounds = new Rect();
+		mPaint.getTextBounds("W",0,1,bounds);
+
+
+
+		for (int sIdx=0;sIdx<mFont[0].length();sIdx++)
+			for (int sIdy=0;sIdy<mFont.length;sIdy++) {	
+				
+				mPaint.setColor(Color.BLACK);
+				mCanvas.drawRect(sIdx*fontWidth,sIdy*fontHeight,sIdx*fontWidth+ fontWidth,sIdy*fontHeight+fontHeight, mPaint);
+				mPaint.setColor(Color.WHITE);
+				mCanvas.drawRect(sIdx*fontWidth+1, sIdy*fontHeight+1, sIdx*fontWidth+ fontWidth-2, sIdy*fontHeight+fontHeight-2, mPaint);
+				mPaint.setColor(Color.BLACK);
+				
+				float xTextOffset=(fontWidth-bounds.right)/2;
+				float yTextOffset=fontHeight-(fontHeight+bounds.top)/2;
+				float posX=sIdx*fontWidth;
+				float posY=sIdy*fontHeight;
+				String mStr = mFont[sIdy].substring(sIdx,sIdx+1);
+				//Log.d("MyLogs","font='"+mStr+"' posX="+posX+" posY="+posY+" bounds.R="+bounds.right+" bounds.B="+bounds.top+ " Xoffset="+xTextOffset+" Yoffset="+yTextOffset);
+				mCanvas.drawText(mStr,posX+xTextOffset,posY+yTextOffset,mPaint);
+			}
+		
+		return mBitmap;
+	}
+		
+	public static int determineMaxTextSize(String str, float maxWidth,
+			float maxHeigth) {
+		int size = (int) (maxWidth / str.length());
+		Paint paint = new Paint();
+		paint.setAntiAlias(true);
+
+		do {
+			paint.setTextSize(++size);
+		} while (paint.measureText(str) < maxWidth * 5 / 6);
+
+		// проверка на высоту
+		Rect bounds = new Rect();
+		paint.getTextBounds(str, 0, str.length(), bounds);
+
+		while (bounds.height() > maxHeigth) {
+			paint.setTextSize(--size);
+			paint.getTextBounds(str, 0, str.length(), bounds);
+		}
+
+		return size;
+	} 
+
+}
