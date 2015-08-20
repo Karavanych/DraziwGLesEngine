@@ -1,4 +1,4 @@
-package dont.touch.white;
+package draziw.gles.engine;
 
 public class Texture {
 	public int id;

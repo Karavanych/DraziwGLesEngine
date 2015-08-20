@@ -1,8 +1,12 @@
-package dont.touch.white;
+package draziw.gles.objects;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import draziw.gles.engine.MyMatrix;
+import draziw.gles.engine.ShaderProgram;
+import draziw.gles.engine.Texture;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,27 +17,11 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
-public class Font2D {
+public class Font2D extends GLESObject{
 	
-	FloatBuffer vertextBuffer;
-	FloatBuffer textureCoordBuffer;
-	int drawVertex=0;
+	public static ShaderProgram sShaderProgram;
 	
-	//shader holder
-	int aPositionHolder;
-	int aTextureCoordHolder;
-	int uSamplerHolder;
-	int uObjectMatrixHandler;
-	
-	public ShaderProgram shProg;
-	private Texture texture;
-	
-	public float[] mObjectMatrix = new float[16];
-	public float[] mObjectMVPMatrix = new float[16];
-	
-	
-	
-	public static final String vertexShaderCode = 
+	public static final String VERTEX_SHADER_CODE = 
 			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
 			 + "attribute vec2 aTextureCoord;	         		   \n" // объявляем входящие данные
 			 + "varying vec2 vTextureCoord;             		   \n" // для передачи во фрагментный шейдер			
@@ -44,65 +32,62 @@ public class Font2D {
 		+	"}"	;
 		
 	
-	public static final String fragmentShaderCode = 
+	public static final String FRAGMENT_SHADER_CODE = 
 			"precision highp float;"
 +			"varying vec2 vTextureCoord;                        \n" +
 			"uniform sampler2D uSampler;                 \n"
 		+	"void main() {							\n"
 		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
 		+	"}"	;
-			
 	
+	
+	FloatBuffer vertextBuffer;
+	FloatBuffer textureCoordBuffer;
+	int drawVertex=0;
+	
+	//shader holder
+	int aPositionHolder;
+	int aTextureCoordHolder;
+	int uSamplerHolder;
+	int uObjectMatrixHandler;
+			
+	@Override
 	public void initializeShaderParam() {
-		aPositionHolder = GLES20.glGetAttribLocation(shProg.programHandler, "aPosition");// получаем указатель для переменной программы aPosition
-		aTextureCoordHolder = GLES20.glGetAttribLocation(shProg.programHandler, "aTextureCoord");
-		uSamplerHolder = GLES20.glGetUniformLocation(shProg.programHandler, "uSampler");		
-		uObjectMatrixHandler=GLES20.glGetUniformLocation(shProg.programHandler, "uObjectMatrix");
+		
+		aPositionHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aPosition");// получаем указатель для переменной программы aPosition
+		aTextureCoordHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aTextureCoord");
+		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uSampler");		
+		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uSamplerHolder || -1==uObjectMatrixHandler) {
 			Log.d("MyLogs", "Shader atributs or uniforms not found.");
 			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uObjectMatrixHandler);
 		}
 		else { 
-			Log.d("MyLogs", "Shader initialized");
+			
 		}
 	}
 
 	
-	public Font2D(ShaderProgram sP,Texture mTexture,String str) {
-		shProg=sP;	
-		texture=mTexture;
-		drawVertex=6;
+	public Font2D(Texture mTexture,String str) {
+		super(mTexture);
 		
-		Matrix.setIdentityM(mObjectMatrix,0);
-						
+		drawVertex=6;								
 		setText(str);		
+	}		
+	
+	@Override
+	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {		
 		
-		initializeShaderParam();
-	}
-	
-	public void rotate(float angleInDegrees,float x,float y,float z) {
-		Matrix.rotateM(mObjectMatrix, 0, angleInDegrees, x, y,z);	
-	}
-	
-	public void scale(float x,float y,float z) {
-		Matrix.scaleM(mObjectMatrix, 0, x, y, z);
-	}
-
-	public void translate(float x,float y,float z) {
-		Matrix.translateM(mObjectMatrix, 0, x, y, z);
-	}
-	
-	public void draw(float[] mMVPMatrix, float timer) {		
-		
-		 Matrix.setIdentityM(mObjectMVPMatrix, 0);
-		 Matrix.multiplyMM(mObjectMVPMatrix, 0, mMVPMatrix, 0, mObjectMatrix, 0);		 
+		 Matrix.multiplyMM(mObjectMVPMatrix, 0, viewMatrix, 0, mObjectMatrix, 0);
+		 Matrix.multiplyMM(mObjectMVPMatrix, 0, projectionMatrix, 0, mObjectMVPMatrix, 0);
+		 
 		 GLES20.glUniformMatrix4fv(uObjectMatrixHandler, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
 		
 		// GLES20.GL_TEXTURE_2D - по большому счету это как кисть, нужно активировать текстуру и привязать ее к кисти.
-		 GLES20.glActiveTexture(GLES20.GL_TEXTURE0+texture.index); // активируем текстуру, которой собрались рисовать		 
-		 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.id); // прикрепляем текстуру, которой собираемся сейчас рисовать		 
-		 GLES20.glUniform1i(uSamplerHolder, texture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему		 		
+		 GLES20.glActiveTexture(GLES20.GL_TEXTURE0+mTexture.index); // активируем текстуру, которой собрались рисовать		 
+		 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture.id); // прикрепляем текстуру, которой собираемся сейчас рисовать		 
+		 GLES20.glUniform1i(uSamplerHolder, mTexture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему		 		
 		 		 
 		 GLES20.glVertexAttribPointer(aPositionHolder, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
 		 GLES20.glEnableVertexAttribArray(aPositionHolder);	
@@ -254,8 +239,7 @@ public class Font2D {
 		int widthBmp=fontWidth*mFont[0].length();
 		int heightBmp=fontHeight*mFont.length;
 		
-		animationVector =new float[]{(float)fontWidth/widthBmp,(float)fontHeight/heightBmp};
-		Log.d("MyLogs", "aX="+animationVector[0]+ " aY="+animationVector[1]);
+		animationVector =new float[]{(float)fontWidth/widthBmp,(float)fontHeight/heightBmp};		
 		
 		
 		// new bitmap
@@ -289,8 +273,7 @@ public class Font2D {
 				float yTextOffset=fontHeight-(fontHeight+bounds.top)/2;
 				float posX=sIdx*fontWidth;
 				float posY=sIdy*fontHeight;
-				String mStr = mFont[sIdy].substring(sIdx,sIdx+1);
-				//Log.d("MyLogs","font='"+mStr+"' posX="+posX+" posY="+posY+" bounds.R="+bounds.right+" bounds.B="+bounds.top+ " Xoffset="+xTextOffset+" Yoffset="+yTextOffset);
+				String mStr = mFont[sIdy].substring(sIdx,sIdx+1);				
 				mCanvas.drawText(mStr,posX+xTextOffset,posY+yTextOffset,mPaint);
 			}
 		
@@ -317,6 +300,20 @@ public class Font2D {
 		}
 
 		return size;
-	} 
+	}
+
+
+	@Override
+	public ShaderProgram getShaderProgramInstance() {		
+		if (sShaderProgram==null) {
+			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
+		}
+		return sShaderProgram;
+	}
+
+
+	public static void reset() {
+		sShaderProgram=null;		
+	}
 
 }

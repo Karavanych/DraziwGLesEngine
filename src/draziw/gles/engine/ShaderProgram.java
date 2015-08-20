@@ -1,4 +1,4 @@
-package dont.touch.white;
+package draziw.gles.engine;
 
 import android.opengl.GLES20;
 import android.util.Log;
