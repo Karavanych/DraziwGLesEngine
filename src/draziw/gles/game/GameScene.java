@@ -25,7 +25,7 @@ public class GameScene {
 	
 	Context context;
 	
-	ResourceManager resources;
+	
 	
 	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();		
 
@@ -39,10 +39,12 @@ public class GameScene {
 	
 	private GameControllers controllers;
 	private GLESCamera camera;
+	private TextureLoader textureLoader;
+	ResourceManager resources;
+	
 	private CubeMap3D cubeMap;
 	private PointLight3D glPointLight;
 
-	private TextureLoader textureLoader;
 	
 	public Player player;
 	
@@ -50,16 +52,14 @@ public class GameScene {
 		this.context=cc;		
 	}
 	
-	public void init(GLESCamera camera, GameControllers gameController) {
+	public void init(GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources) {
 		this.controllers=gameController;
 		this.camera=camera;		
+		this.textureLoader=mTextureLoader;
+		this.resources=mResources;
 				
-		clearPrograms();
-		
-		textureLoader= new TextureLoader(context);	
-		textureLoader.loadTexture();
-		
-		resources=new ResourceManager(context); // load texture and buffers
+		clearPrograms();						
+				
 		
 		//создаем элементы из записанной сцены и загружаем ресурсы
 		sceneElements=new SceneElements("scene1",resources);		
@@ -184,22 +184,6 @@ public class GameScene {
 		   ControllerView.reset();
 		   Player.reset();
 	   }
-	
-	
-	public void clearOldBuffersAndTextures() {
-		
-		if (textureLoader!=null) {
-			textureLoader.deleteTextures();
-			textureLoader=null;
-		}
-		
-		if (resources!=null) {
-			resources.clearBuffers();
-			resources=null;
-		}
-		
-		
-	}
 	   
 	   
 

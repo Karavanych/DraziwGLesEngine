@@ -17,6 +17,7 @@ import draziw.gles.engine.TextureLoader;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.opengl.GLES20;
+import android.util.Log;
 
 public class ResourceManager {
 		
@@ -37,8 +38,7 @@ public class ResourceManager {
 	
 	public void loadVntBuffers(HashMap<String, Float> objectNames) { // vertex, normal, texture
 		int bufferCount = objectNames.size();
-		
-		// для тестов сгенерируем буферы здесь
+				
 		final int buffers[] = new int[bufferCount];
 		GLES20.glGenBuffers(bufferCount, buffers, 0);
 		
@@ -126,19 +126,53 @@ public class ResourceManager {
 		return bufferIndex.get(modelName)[1];
 	}
 
-	public void clearBuffers() {		
-		int[] indicesToRemove=new int[bufferIndex.size()];
+	public void confirmBuffers() {
+		
+	/*	for (int each:texturesId) {
+			needReload=(needReload || !GLES20.glIsBuffer(each));
+		}
+		*/
+		
+		ArrayList <Integer> indicesToRemove=new ArrayList<Integer>();
+		ArrayList <String> namesToRemove=new ArrayList<String>();
 		
 		Iterator<Entry<String, int[]>> it = bufferIndex.entrySet().iterator();
-		int count=0;
+		
 	    while (it.hasNext()) {
-	        Entry<String, int[]> pair = it.next();	       	        
-	        indicesToRemove[count]=pair.getValue()[0];
-	        count++;
-	       
-	        it.remove(); // avoids a ConcurrentModificationException
+	        Entry<String, int[]> pair = it.next();
+	        int bufferIdx = pair.getValue()[0];
+	        
+	        // проверим валидность буфера
+	        if (!GLES20.glIsBuffer(bufferIdx)) {
+	        	indicesToRemove.add(bufferIdx);	 
+	        	namesToRemove.add(pair.getKey());
+	        	it.remove();
+	        } else {
+	        	Log.d("MyLogs", "buffer "+pair.getKey()+" is OK!");
+	        }
 	    }
-		GLES20.glDeleteBuffers(indicesToRemove.length,indicesToRemove,0);		
+	    
+	    if (indicesToRemove.size()>0) {
+	    
+		    int[] indicesToRemoveArray=new int[indicesToRemove.size()];
+		    
+		    for (int i=0;i<indicesToRemoveArray.length;i++) {
+		    	indicesToRemoveArray[i]=indicesToRemove.get(i);
+		    }	    
+		    
+			GLES20.glDeleteBuffers(indicesToRemoveArray.length,indicesToRemoveArray,0);	
+			
+			indicesToRemoveArray=null;
+		
+			// reload buffers
+			
+			for (int i=0;i<indicesToRemove.size();i++) {
+				loadBufferToVBO(namesToRemove.get(i),indicesToRemove.get(i));				
+			}			
+			
+	    }
+		
+		
 	}
 		
 

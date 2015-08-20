@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
 
 		
 		// используем свою реализацию EGLConfigChooser
-		Config2D888MSAA configChooser=new Config2D888MSAA();
+		Config3D888MSAA configChooser=new Config3D888MSAA();
 		mSurfaceView.setEGLConfigChooser(configChooser);
 		
 		if (pixelFormat!=configChooser.getPixelFormat()) {

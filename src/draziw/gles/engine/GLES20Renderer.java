@@ -6,10 +6,12 @@ import javax.microedition.khronos.opengles.GL10;
 import draziw.gles.game.GLESCamera;
 import draziw.gles.game.GameControllers;
 import draziw.gles.game.GameScene;
+import draziw.gles.game.ResourceManager;
 
 import android.content.Context;
 
 import android.opengl.GLES20;
+import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.opengl.GLSurfaceView.Renderer;
 import android.os.SystemClock;
@@ -38,6 +40,10 @@ public class GLES20Renderer implements Renderer {
 	GameScene gameScene;
 	GameControllers gameController;
 
+	private TextureLoader textureLoader;
+
+	private ResourceManager resources;
+
 	public GLES20Renderer(Context cc) {
 		context = cc;
 		// this.videoCapture = new VideoCapture(context,new
@@ -57,25 +63,34 @@ public class GLES20Renderer implements Renderer {
 
 		GLES20.glEnable(GLES20.GL_BLEND);
 		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		
+		textureLoader= new TextureLoader(context);
+		textureLoader.loadTexture();
+		
+		resources = new ResourceManager(context);
 
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
+		
 
 		GLES20.glViewport(0, 0, width, height);
 		this.width = width;
 		this.height = height;
+			
 
 		if (gameScene != null) {
-			gameScene.clearOldBuffersAndTextures();
-		}
+			textureLoader.confirmTextures();
+			resources.confirmBuffers();
+		} else {
 
-		// инициализации матриц вида, проекций и мира , получение размеров мира
-		GLESCamera camera=new GLESCamera(width, height);
-		gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
-		gameScene = new GameScene(context);
-		gameScene.init(camera, gameController);
+			// инициализации матриц вида, проекций и мира , получение размеров мира
+			GLESCamera camera=new GLESCamera(width, height);
+			gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
+			gameScene = new GameScene(context);
+			gameScene.init(camera, gameController,textureLoader,resources);
+		}
 				
 
 		// сначала загружаем текстуры, потом всякие вертексы и шейдеры
@@ -114,25 +129,13 @@ public class GLES20Renderer implements Renderer {
 
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		gameScene.onDrawFrame(timer);
-
-		/*
-		 * if (videoCapture.isStarted()) { // render twice synchronized
-		 * (videoCapture) { if (videoCapture.beginCaptureFrame()) {
-		 * GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		 * GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-		 * GLES20.glViewport(videoViewport.left, videoViewport.top,
-		 * videoViewport.width(), videoViewport.height());
-		 * 
-		 * GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-		 * GLES20.glScissor(videoViewport.left, videoViewport.top,
-		 * videoViewport.width(), videoViewport.height());
-		 * 
-		 * gameScene.onDrawFrame(mViewMatrix,mProjectionMatrix, timer);
-		 * 
-		 * GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
-		 * 
-		 * videoCapture.endCaptureFrame(); } } }
-		 */
+		
+		/*int error = GLES20.glGetError();
+		  if (error != GLES20.GL_NO_ERROR)
+	        {         	
+	            Log.d("MyLogs", " on draw Error: " + GLU.gluErrorString(error));            
+	        }*/
+		
 
 	}
 
