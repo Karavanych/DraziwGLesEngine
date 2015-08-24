@@ -21,16 +21,9 @@ import draziw.gles.objects.Sprite2D;
 
 public class GameScene {
 	
-	
-	
 	Context context;
-	
-	
-	
+		
 	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();		
-
-	
-	
 	
 	public int lightMoveDirection=-1;
 	public int lightMoveDirectionCount=300;

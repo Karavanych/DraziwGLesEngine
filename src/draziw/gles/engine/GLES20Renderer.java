@@ -11,8 +11,6 @@ import draziw.gles.game.ResourceManager;
 import android.content.Context;
 
 import android.opengl.GLES20;
-import android.opengl.GLU;
-import android.opengl.Matrix;
 import android.opengl.GLSurfaceView.Renderer;
 import android.os.SystemClock;
 
@@ -65,7 +63,7 @@ public class GLES20Renderer implements Renderer {
 		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		textureLoader= new TextureLoader(context);
-		textureLoader.loadTexture();
+		textureLoader.loadTextures();
 		
 		resources = new ResourceManager(context);
 

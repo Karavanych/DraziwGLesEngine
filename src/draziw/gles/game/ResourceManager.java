@@ -31,8 +31,7 @@ public class ResourceManager {
 	public Context context;	
 
 	public ResourceManager(Context context) {
-		this.context=context;
-								
+		this.context=context;								
 	}	
 
 	
@@ -132,9 +131,7 @@ public class ResourceManager {
 			needReload=(needReload || !GLES20.glIsBuffer(each));
 		}
 		*/
-		
-		ArrayList <Integer> indicesToRemove=new ArrayList<Integer>();
-		ArrayList <String> namesToRemove=new ArrayList<String>();
+				
 		
 		Iterator<Entry<String, int[]>> it = bufferIndex.entrySet().iterator();
 		
@@ -144,15 +141,17 @@ public class ResourceManager {
 	        
 	        // проверим валидность буфера
 	        if (!GLES20.glIsBuffer(bufferIdx)) {
-	        	indicesToRemove.add(bufferIdx);	 
-	        	namesToRemove.add(pair.getKey());
-	        	it.remove();
+	        	//  достаточно просто перезагрузить буферы, нет необходимости их удал€ть
+	        	// а посколько у нас дл€ хранени€ используетс€ HashMap,
+	        	// то она просто переложит элемент по имени
+	        	loadBufferToVBO(pair.getKey(),bufferIdx);	 
+	        	
 	        } else {
 	        	Log.d("MyLogs", "buffer "+pair.getKey()+" is OK!");
 	        }
 	    }
 	    
-	    if (indicesToRemove.size()>0) {
+	    /*if (indicesToRemove.size()>0) {
 	    
 		    int[] indicesToRemoveArray=new int[indicesToRemove.size()];
 		    
@@ -166,11 +165,13 @@ public class ResourceManager {
 		
 			// reload buffers
 			
-			for (int i=0;i<indicesToRemove.size();i++) {
-				loadBufferToVBO(namesToRemove.get(i),indicesToRemove.get(i));				
+			int buffers[] = new int[1];
+			for (int i=0;i<indicesToRemove.size();i++) {								
+				GLES20.glGenBuffers(1, buffers, 0);
+				loadBufferToVBO(namesToRemove.get(i),buffers[0]);				
 			}			
 			
-	    }
+	    }*/
 		
 		
 	}

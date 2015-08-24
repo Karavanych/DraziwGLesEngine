@@ -6,6 +6,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView.EGLConfigChooser;
+import android.util.Log;
 
 public class Config3D888MSAA implements EGLConfigChooser {
 
@@ -31,18 +32,25 @@ public class Config3D888MSAA implements EGLConfigChooser {
 		mValue = new int[1];
 		pixelFormat = PixelFormat.RGBA_8888; // см configSpec: EGL_RED_SIZE,EGL_GREEN_SIZE,Blue и т.д.
 		
-		//пробуем установить msaa сглаживание
-		int[] configSpec = { EGL10.EGL_RED_SIZE, 8,
-				EGL10.EGL_GREEN_SIZE, 8,
-				EGL10.EGL_BLUE_SIZE, 8,
-				EGL10.EGL_RENDERABLE_TYPE, 4,
-				EGL10.EGL_SAMPLE_BUFFERS, 1,
-				EGL10.EGL_DEPTH_SIZE, 16,
-				// или можно попробовать установить 4 семпла, а только потом 2
-				EGL10.EGL_SAMPLES, 2, EGL10.EGL_NONE };
-		if (!egl.eglChooseConfig(display, configSpec, null, 0, mValue)) {
-			throw new IllegalArgumentException("RGB888 eglChooseConfig failed");
-		}
+		// сглаживание отключили пока совсем, почему то с ним эмулятор валится.
+		int[] configSpec = {
+                EGL10.EGL_RED_SIZE, 8,
+                EGL10.EGL_GREEN_SIZE, 8,
+                EGL10.EGL_BLUE_SIZE, 8,
+                //EGL10.EGL_ALPHA_SIZE, 8,
+                EGL10.EGL_RENDERABLE_TYPE, 4,
+                EGL10.EGL_DEPTH_SIZE, 16,
+                EGL10.EGL_SAMPLE_BUFFERS, 1,
+                EGL10.EGL_SAMPLES, 2,
+                EGL10.EGL_NONE
+        };
+        if (!egl.eglChooseConfig(display, configSpec, null, 0,mValue)) {
+        	// в релизе надо будет убирать throw
+            //throw new IllegalArgumentException("RGB888 eglChooseConfig failed");
+        	logConfigType("RGB888 + msaa failed");
+        } else {
+        	logConfigType("RGB88 + msaa enabled");
+        }
 		int numConfigs = mValue[0];
 		
 		
@@ -54,8 +62,7 @@ public class Config3D888MSAA implements EGLConfigChooser {
 
             final int EGL_COVERAGE_BUFFERS_NV = 0x30E0;
             final int EGL_COVERAGE_SAMPLES_NV = 0x30E1;
-
-            pixelFormat = PixelFormat.RGBA_8888;
+            
             configSpec = new int[]{
                     EGL10.EGL_RED_SIZE, 8,
                     EGL10.EGL_GREEN_SIZE, 8,
@@ -70,9 +77,36 @@ public class Config3D888MSAA implements EGLConfigChooser {
 
             if (!egl.eglChooseConfig(display, configSpec, null, 0,
                     mValue)) {
-                throw new IllegalArgumentException("2nd eglChooseConfig failed");
+            	// в релизе надо будет убирать throw
+                //throw new IllegalArgumentException("2nd eglChooseConfig failed");
+            	logConfigType("RGB888 + csaa failed");
+            } else {
+            	logConfigType("RGB88 + csaa enabled");
             }
             numConfigs = mValue[0];
+		}
+		
+		// PixelFormat.RGBA_8888 без сглаживания
+		if (numConfigs <= 0) {
+			// PixelFormat.RGBA_8888 без сглаживания
+			configSpec = new int[]{
+			                EGL10.EGL_RED_SIZE, 8,
+			                EGL10.EGL_GREEN_SIZE, 8,
+			                EGL10.EGL_BLUE_SIZE, 8,
+			                //EGL10.EGL_ALPHA_SIZE, 8,
+			                EGL10.EGL_RENDERABLE_TYPE, 4,
+			                EGL10.EGL_DEPTH_SIZE, 16,		                
+			                EGL10.EGL_NONE
+			        };
+					
+			 if (!egl.eglChooseConfig(display, configSpec, null, 0,mValue)) {
+			        	// в релизе надо будет убирать throw
+			            //throw new IllegalArgumentException("RGB888 eglChooseConfig failed");
+				 logConfigType("RGB888 NO_Multisampling failed");
+			 } else {
+				 logConfigType("RGB88 + NO_MS enabled");
+			 }
+			 numConfigs = mValue[0];
 		}
 
 		// Если подходящих кофигураций RGB888 нет, то пробуем получить RGB888
@@ -81,11 +115,13 @@ public class Config3D888MSAA implements EGLConfigChooser {
 			pixelFormat = PixelFormat.RGB_565;
 			configSpec = new int[] { EGL10.EGL_RED_SIZE, 5,
 					EGL10.EGL_GREEN_SIZE, 6, EGL10.EGL_BLUE_SIZE, 5,
+					EGL10.EGL_DEPTH_SIZE,4,
 					EGL10.EGL_RENDERABLE_TYPE, 4, EGL10.EGL_NONE };
 
 			if (!egl.eglChooseConfig(display, configSpec, null, 0, mValue)) {
-				throw new IllegalArgumentException(
-						"RGB565 eglChooseConfig failed");
+				logConfigType("RGB565 eglChooseConfig failed");					
+			} else {
+				logConfigType("RGB565 + NO_MS enabled");
 			}
 
 			numConfigs = mValue[0];
@@ -107,6 +143,10 @@ public class Config3D888MSAA implements EGLConfigChooser {
 
 	public int getPixelFormat() {
 		return pixelFormat;
+	}
+	
+	public void logConfigType(String message) {
+		Log.e("MyLogs", message);		
 	}
 	
 }
