@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import android.util.Log;
 
 
 
@@ -15,6 +16,7 @@ import draziw.gles.objects.Custom3D;
 import draziw.gles.objects.CubeMap3D;
 import draziw.gles.objects.Font2D;
 import draziw.gles.objects.GLESObject;
+import draziw.gles.objects.Player;
 import draziw.gles.objects.PointLight3D;
 import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
@@ -70,8 +72,7 @@ public class GameScene {
 		placeScene(glPointLight,sceneElements,sceneLayer);
 								
 		placeControllers(gameController,sceneLayer);
-										
-		
+											
 		//sceneLayer.add(glPointLight);
 		
 
@@ -128,7 +129,13 @@ public class GameScene {
 		// матрицу вида полуваем один раз в цикле отрисовки, потому что она расчетная
 		// каждый раз при вызове getViewMatrix будет пересчитываться
 		float[] viewMatrix = camera.getViewMatrix();
-		camera.moveByController(timer,controllers);
+		
+		//camera.moveByController(timer,controllers);
+		
+		player.moveByController(timer, controllers);
+		
+		camera.setPositionByGLESObject(player);
+		glPointLight.setPositionM(camera.position[0],camera.position[1],camera.position[2]);
 		
 		for (GLESObject tekObject:sceneLayer) {
 			GLES20.glUseProgram(tekObject.getShaderProgramInstance().programHandler);	

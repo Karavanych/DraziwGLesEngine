@@ -1,20 +1,14 @@
 package draziw.gles.objects;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
-import draziw.gles.engine.MyMatrix;
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 

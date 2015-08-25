@@ -47,7 +47,7 @@ public abstract class GLESObject {
 		MyMatrix.vec3add(position, x, y, z);
 		
 		Matrix.translateM(mObjectMatrix, 0, x, y, z);
-				
+			
 	}
 	
 	public void setPositionM(float x,float y,float z) {
@@ -55,10 +55,7 @@ public abstract class GLESObject {
 		Matrix.translateM(mObjectMatrix, 0, x-position[0],y-position[1], z-position[2]);
 		
 		MyMatrix.vec3set(position, x, y, z);
-	}	
-	
-
-	
+	}		
 	
 	public void setGeometry(float x,float y,float z) {
 		// геометрия в единицах в которых экран, т.е. -1,1.6 - до +1,-1,6

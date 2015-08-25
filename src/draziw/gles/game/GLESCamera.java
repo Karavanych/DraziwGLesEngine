@@ -2,6 +2,8 @@ package draziw.gles.game;
 
 import draziw.gles.engine.MyMatrix;
 import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.objects.GLESObject;
+import draziw.gles.objects.Player;
 import android.opengl.Matrix;
 import android.util.Log;
 
@@ -133,7 +135,7 @@ public class GLESCamera {
 
 	public float[] getViewMatrix() {
 
-		// uvn camera - u - right, v - up, n - forward
+		// uvn camera - u - right, v - up, n - forward				
 
 		viewMatrix[0] = right[0];
 		viewMatrix[4] = right[1];
@@ -192,7 +194,7 @@ public class GLESCamera {
 			}
 
 			if (Math.abs(controllersRight.getMovementX()) > 0.02) {
-				rotate(0, 1, 0, controllersRight.getMovementX() * timer*5);
+				rotate(controllersRight.getMovementX() * timer*5,0, 1, 0);
 			}
 		}
 	}
@@ -209,7 +211,7 @@ public class GLESCamera {
 		MyMatrix.vec3add(position, up, distance);
 	}
 
-	public void rotate(float x, float y, float z, float angle) { // x - right, y - up , z - forward
+	public void rotate(float angle,float x, float y, float z) { // x - right, y - up , z - forward
 		// получим viewMatrix с позицией 0,0,0
 		
 		rotationMatrix[0] = right[0];
@@ -252,6 +254,19 @@ public class GLESCamera {
 	
 	public float[] getGlScreenSize() {
 		return glScreenSize;
+	}
+	
+	public void setPositionByGLESObject(GLESObject mObj) {
+		// optimal camera 0, 7 , 1 
+		//player position = 0.0,4.0,-2.0
+		
+		position[0]=mObj.position[0];
+		position[1]=mObj.position[1]+3;
+		position[2]=mObj.position[2]+3;		
+	}
+	
+	public void lookAtGLESObject(GLESObject mObj) {
+		
 	}
 
 }
