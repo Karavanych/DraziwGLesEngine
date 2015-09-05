@@ -19,20 +19,23 @@ public class GLESCamera {
 	// медоте getViewMatrix
 	private float[] viewMatrix = new float[16]; // вид
 	
-	private float[] rotationMatrix = new float[16]; // по идее нужно пересмотреть forward,up, right на rotation matrix
+	//private float[] rotationMatrix = new float[16]; // по идее нужно пересмотреть forward,up, right на rotation matrix
 
 	public float[] position = new float[3];
 
-	public float[] forward = new float[3];
+	/*public float[] forward = new float[3];
 
 	public float[] up = new float[3];
 
-	public float[] right = new float[3];
+	public float[] right = new float[3];*/
 		
 	int width;
 	int height;	
 	
 	public float[] glScreenSize=new float[2];
+	
+	private float toPlayerDistanceZ=2.5f;
+	private float toPlayerDistanceU=2f;
 
 	public GLESCamera(int width, int height) {
 		this.width = width;
@@ -45,13 +48,16 @@ public class GLESCamera {
 		 */
 
 		MyMatrix.vec3set(position, 0.0f, 0.0f, 15.0f);
-
+		
+		Matrix.setIdentityM(viewMatrix, 0);
+		
+/*
 		MyMatrix.vec3set(forward, 0.0f, 0.0f, 1.0f);
 
 		MyMatrix.vec3set(up, 0.0f, 1.0f, 0.0f);
 
 		MyMatrix.vec3set(right, 1.0f, 0.0f, 0.0f);
-
+*/
 		projectionInitialization();
 	}
 
@@ -137,22 +143,22 @@ public class GLESCamera {
 
 		// uvn camera - u - right, v - up, n - forward				
 
-		viewMatrix[0] = right[0];
-		viewMatrix[4] = right[1];
-		viewMatrix[8] = right[2];
+		/*viewMatrix[0] = rotationMatrix[0];//right[0];
+		viewMatrix[4] = rotationMatrix[4];//right[1];
+		viewMatrix[8] = rotationMatrix[8];//right[2];
 
-		viewMatrix[1] = up[0];
-		viewMatrix[5] = up[1];
-		viewMatrix[9] = up[2];
+		viewMatrix[1] = rotationMatrix[1];//up[0];
+		viewMatrix[5] = rotationMatrix[5];//up[1];
+		viewMatrix[9] = rotationMatrix[9];//up[2];
 
-		viewMatrix[2] = forward[0];
-		viewMatrix[6] = forward[1];
-		viewMatrix[10] = forward[2];
+		viewMatrix[2] = rotationMatrix[2];//forward[0];
+		viewMatrix[6] = rotationMatrix[6];//forward[1];
+		viewMatrix[10] = rotationMatrix[10];//forward[2];
 
 		viewMatrix[3] = 0.0f;
 		viewMatrix[7] = 0.0f;
 		viewMatrix[11] = 0.0f;
-		viewMatrix[15] = 1.0f;
+		viewMatrix[15] = 1.0f;*/
 		
 		viewMatrix[12] = -(viewMatrix[0] * position[0] + viewMatrix[4]
 					* position[1] + viewMatrix[8] * position[2]);
@@ -200,21 +206,30 @@ public class GLESCamera {
 	}
 
 	public void moveForward(float distance) {
-		MyMatrix.vec3add(position, forward, distance);
+		position[0]+=viewMatrix[2]*distance;
+		position[1]+=viewMatrix[6]*distance;
+		position[2]+=viewMatrix[10]*distance;
+		//MyMatrix.vec3add(position, forward, distance);
 	}
 
 	public void moveRight(float distance) {
-		MyMatrix.vec3add(position, right, distance);
+		position[0]+=viewMatrix[0]*distance;
+		position[1]+=viewMatrix[4]*distance;
+		position[2]+=viewMatrix[8]*distance;
+		//MyMatrix.vec3add(position, right, distance);
 	}
 
 	public void moveUp(float distance) {
-		MyMatrix.vec3add(position, up, distance);
+		position[0]+=viewMatrix[1]*distance;
+		position[1]+=viewMatrix[5]*distance;
+		position[2]+=viewMatrix[9]*distance;
+		//MyMatrix.vec3add(position, up, distance);
 	}
 
 	public void rotate(float angle,float x, float y, float z) { // x - right, y - up , z - forward
 		// получим viewMatrix с позицией 0,0,0
 		
-		rotationMatrix[0] = right[0];
+		/*rotationMatrix[0] = right[0];
 		rotationMatrix[4] = right[1];
 		rotationMatrix[8] = right[2];
 
@@ -233,11 +248,15 @@ public class GLESCamera {
 		
 		rotationMatrix[12] = 0;
 		rotationMatrix[13] = 0;
-		rotationMatrix[14] = 0;		
+		rotationMatrix[14] = 0;	*/	
 		
-		Matrix.rotateM(rotationMatrix, 0, angle, x, y, z);
+		viewMatrix[12]=0;
+		viewMatrix[13]=0;
+		viewMatrix[14]=0;
+		
+		Matrix.rotateM(viewMatrix, 0, angle, x, y, z);
 
-		// восстановим вектора осей из повернутой матрицы
+		/*// восстановим вектора осей из повернутой матрицы
 		right[0] = rotationMatrix[0];
 		right[1] = rotationMatrix[4];
 		right[2] = rotationMatrix[8];
@@ -248,7 +267,7 @@ public class GLESCamera {
 
 		forward[0] = rotationMatrix[2];
 		forward[1] = rotationMatrix[6];
-		forward[2] = rotationMatrix[10];
+		forward[2] = rotationMatrix[10];*/
 
 	}
 	
@@ -263,6 +282,29 @@ public class GLESCamera {
 		position[0]=mObj.position[0];
 		position[1]=mObj.position[1]+3;
 		position[2]=mObj.position[2]+3;		
+	}
+	
+	
+	public void setByPlayerTranslateRotation(Player mPlayer) {
+		float[] mPlRt = mPlayer.getRotation();		
+		
+		viewMatrix[0] = mPlRt[0];//right[0];
+		viewMatrix[4] = mPlRt[1];//right[1];
+		viewMatrix[8] = mPlRt[2];//right[2];
+
+		viewMatrix[1] = mPlRt[4];//up[0];
+		viewMatrix[5] = mPlRt[5];//up[1];
+		viewMatrix[9] = mPlRt[6];//up[2];
+
+		viewMatrix[2] = mPlRt[8];//forward[0];
+		viewMatrix[6] = mPlRt[9];//forward[1];
+		viewMatrix[10] = mPlRt[10];//forward[2];
+		
+		
+		position[0]=mPlayer.position[0]+mPlRt[8]*toPlayerDistanceZ+mPlRt[4]*toPlayerDistanceU;
+		position[1]=mPlayer.position[1]+mPlRt[9]*toPlayerDistanceZ+mPlRt[5]*toPlayerDistanceU;
+		position[2]=mPlayer.position[2]+mPlRt[10]*toPlayerDistanceZ+mPlRt[6]*toPlayerDistanceU;		
+				
 	}
 	
 	public void lookAtGLESObject(GLESObject mObj) {

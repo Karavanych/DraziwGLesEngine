@@ -41,7 +41,7 @@ public class ShaderProgram {
          int[] compiled = new int[1];
          GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
          if (compiled[0] == 0) {
-        	 Log.d("MyLogs","compile shader Error");
+        	 Log.e("MyLogs","compile shader Error");
         	 Log.e("Error", "Could not compile shader name:" + source + " =>" +type+ ":");
              Log.e("Error", GLES20.glGetShaderInfoLog(shader));
              GLES20.glDeleteShader(shader);

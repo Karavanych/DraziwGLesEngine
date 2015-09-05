@@ -55,7 +55,7 @@ public class Player extends Custom3D {
 	// rotateIndependent
 	public void rotateI(float angleInDegrees,float x,float y,float z) {				
 		
-		Matrix.rotateM(mRotationMatrix, 0, angleInDegrees, x, y,z);				
+		Matrix.rotateM(mRotationMatrix, 0, angleInDegrees, x, y,z);		
 		
 	}	
 	
@@ -64,21 +64,21 @@ public class Player extends Custom3D {
 	}	
 	
 	public void moveForward(float distance) {
-		position[0]-=mRotationMatrix[2]*distance;
-		position[1]+=mRotationMatrix[6]*distance;
+		position[0]+=mRotationMatrix[8]*distance;
+		position[1]+=mRotationMatrix[9]*distance;
 		position[2]+=mRotationMatrix[10]*distance;	
 	}
 
 	public void moveRight(float distance) {		
-		position[0]-=mRotationMatrix[0]*distance;
-		position[1]+=mRotationMatrix[4]*distance;
-		position[2]+=mRotationMatrix[8]*distance;
+		position[0]+=mRotationMatrix[0]*distance;
+		position[1]+=mRotationMatrix[1]*distance;
+		position[2]+=mRotationMatrix[2]*distance;
 	}
 
 	public void moveUp(float distance) {		
-		position[0]-=mRotationMatrix[1]*distance;
+		position[0]+=mRotationMatrix[4]*distance;
 		position[1]+=mRotationMatrix[5]*distance;
-		position[2]+=mRotationMatrix[9]*distance;
+		position[2]+=mRotationMatrix[6]*distance;
 	}
 	
 	@Override
@@ -104,6 +104,10 @@ public class Player extends Custom3D {
 		super.draw(viewMatrix, projectionMatrix, timer);
 	}
 	
+	public float[] getRotation() {
+		return mRotationMatrix;
+	}
+	
 	public void moveByController(float timer, GameControllers controllers) {
 		Controller controllersLeft = controllers
 				.getControllerByType(GameControllers.CONTROLLER_LEFT);
@@ -126,7 +130,7 @@ public class Player extends Custom3D {
 			}
 
 			if (Math.abs(controllersRight.getMovementX()) > 0.02) {
-				rotateI(controllersRight.getMovementX() * timer*5,0, 1, 0);
+				rotateI(-controllersRight.getMovementX() * timer*5,0, 1, 0);
 			}
 		}
 	}

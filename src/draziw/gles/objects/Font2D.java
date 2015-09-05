@@ -60,8 +60,8 @@ public class Font2D extends GLESObject{
 		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uSamplerHolder || -1==uObjectMatrixHandler) {
-			Log.d("MyLogs", "Shader atributs or uniforms not found.");
-			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uObjectMatrixHandler);
+			Log.e("MyLogs", "Shader atributs or uniforms not found.");
+			Log.e("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uObjectMatrixHandler);
 		}
 		else { 
 			

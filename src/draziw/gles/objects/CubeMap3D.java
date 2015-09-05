@@ -125,8 +125,8 @@ public class CubeMap3D extends GLESObject {
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uObjectMatrixHandler || -1==uSamplerHolder 
 				  ) {
-			Log.d("MyLogs", "Shader CubeMap atributs or uniforms not found.");
-			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uObjectMatrixHandler+","+uSamplerHolder);
+			Log.e("MyLogs", "Shader CubeMap atributs or uniforms not found.");
+			Log.e("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uObjectMatrixHandler+","+uSamplerHolder);
 		}
 		else { 
 			

@@ -237,8 +237,8 @@ public class Old_Custom3D extends GLESObject {
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uObjectMatrixHandler || -1==uSamplerHolder ||
 				-1==aNormalHandler || -1==uMVMatrixHandler || -1==uLightPosHandler || -1==uLuminance) {
-			Log.d("MyLogs", "Shader Custom3D atributs or uniforms not found.");
-			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uObjectMatrixHandler+","+uSamplerHolder+","+uMVMatrixHandler+","+aNormalHandler+","+uLightPosHandler+","+uLuminance);
+			Log.e("MyLogs", "Shader Custom3D atributs or uniforms not found.");
+			Log.e("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uObjectMatrixHandler+","+uSamplerHolder+","+uMVMatrixHandler+","+aNormalHandler+","+uLightPosHandler+","+uLuminance);
 		}
 		else { 
 			

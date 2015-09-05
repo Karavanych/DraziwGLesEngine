@@ -2,6 +2,12 @@ package draziw.gles.game;
 
 import java.util.ArrayList;
 
+import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
+import com.badlogic.gdx.physics.bullet.linearmath.btVector3;
+
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -75,6 +81,17 @@ public class GameScene {
 											
 		//sceneLayer.add(glPointLight);
 		
+		Bullet.init();
+		
+		btCollisionObject groundObject = new btCollisionObject();
+		btSphereShape ballShape = new btSphereShape(0.5f);
+		
+		btCollisionObject ballObject = new btCollisionObject();
+	    ballObject.setCollisionShape(ballShape);
+	   
+		//ballObject.setWorldTransform();
+		//чтобы использовать bullet из libgdx нужно vec3 и matrix4 тащить оттуда
+		
 
 	}
 	
@@ -128,13 +145,24 @@ public class GameScene {
 		
 		// матрицу вида полуваем один раз в цикле отрисовки, потому что она расчетная
 		// каждый раз при вызове getViewMatrix будет пересчитываться
-		float[] viewMatrix = camera.getViewMatrix();
 		
+		
+		// сначала перемещаем камеру, если надо, потом получаем матрицу вида
 		//camera.moveByController(timer,controllers);
 		
 		player.moveByController(timer, controllers);
 		
-		camera.setPositionByGLESObject(player);
+		camera.setByPlayerTranslateRotation(player);
+		
+		
+		
+		float[] viewMatrix = camera.getViewMatrix();
+		
+		
+		
+		//player.moveByController(timer, controllers);
+		
+		//camera.setPositionByGLESObject(player);
 		glPointLight.setPositionM(camera.position[0],camera.position[1],camera.position[2]);
 		
 		for (GLESObject tekObject:sceneLayer) {

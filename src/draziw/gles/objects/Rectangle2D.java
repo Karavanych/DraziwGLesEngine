@@ -110,8 +110,8 @@ public class Rectangle2D extends GLESObject {
 		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
 		
 		if (-1==aPositionHolder || -1==aColorHolder || -1==uObjectMatrixHandler) {
-			Log.d("MyLogs", "Shader Rectangle atributs or uniforms not found.");
-			Log.d("MyLogs",""+aPositionHolder+","+aColorHolder+","+uObjectMatrixHandler);
+			Log.e("MyLogs", "Shader Rectangle atributs or uniforms not found.");
+			Log.e("MyLogs",""+aPositionHolder+","+aColorHolder+","+uObjectMatrixHandler);
 		}
 		else { 			
 		}

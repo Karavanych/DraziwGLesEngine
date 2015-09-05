@@ -68,8 +68,8 @@ public class Sprite2D extends GLESObject {
 		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uSamplerHolder || -1==uAnimVectorHolder || -1==uFrameHolder || -1==uObjectMatrixHandler) {
-			Log.d("MyLogs", "Shader atributs or uniforms not found.");
-			Log.d("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uAnimVectorHolder+","+uFrameHolder+","+uObjectMatrixHandler);
+			Log.e("MyLogs", "Shader atributs or uniforms not found.");
+			Log.e("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uAnimVectorHolder+","+uFrameHolder+","+uObjectMatrixHandler);
 		}
 		else { 
 			

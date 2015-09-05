@@ -46,10 +46,6 @@ public abstract class OldGLESObject {
 	public void moveTo(float x,float y,float z) {
 		// this work only if geometry set
 		
-		
-		//Log.d("MyLogs", "x1="+mGeometry[0]+" y1="+mGeometry[1]);
-		
-		//Log.d("MyLogs", "x2="+Float.toString(x-mGeometry[0])+" y2="+Float.toString(y-mGeometry[1]));
 		float dx=x-currentPosition[0];
 		float dy=currentPosition[1]-y;
 		float dz=z-currentPosition[2];
