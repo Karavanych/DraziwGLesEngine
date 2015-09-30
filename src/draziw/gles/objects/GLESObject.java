@@ -4,18 +4,16 @@ import draziw.gles.engine.MyMatrix;
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 import android.opengl.Matrix;
-import android.util.Log;
 
 public abstract class GLESObject {
-		
-		
+					
 	public Texture mTexture;
-	public float[] mGeometry=new float[3];
 	
 	public float[] mObjectMatrix = new float[16];
 	public float[] mObjectMVPMatrix = new float[16];
 	
 	public float[] position = new float[3];
+	public float[] geometry=new float[3];
 
 	public int shaderProgramHandler;
 	
@@ -58,14 +56,20 @@ public abstract class GLESObject {
 	}		
 	
 	public void setGeometry(float x,float y,float z) {
-		// геометрия в единицах в которых экран, т.е. -1,1.6 - до +1,-1,6
-		mGeometry[0]=x;
-		mGeometry[1]=y;
-		mGeometry[2]=z;
+		// геометрия в единицах мира, раньше мы страдали фигней :)))
+		geometry[0]=x;
+		geometry[1]=y;
+		geometry[2]=z;
 	}
 	
-	public void scaleByGeometri() {
-		Matrix.scaleM(mObjectMatrix, 0, mGeometry[0]*0.5f, mGeometry[1]*0.5f,mGeometry[2]*0.5f);		
+	public void setRadius(float r) {
+		geometry[0]=r;
+		geometry[1]=r;
+		geometry[2]=r;
+	}
+	
+	public float getRadius() {
+		return geometry[0];
 	}
 	
 	public void resetMatrix() {
@@ -75,6 +79,8 @@ public abstract class GLESObject {
 	public boolean isGUI() {
 		return false;
 	}
+	
+	
 	
 
 }

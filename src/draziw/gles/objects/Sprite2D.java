@@ -132,7 +132,7 @@ public class Sprite2D extends GLESObject {
 		setTextureBounds(new float[] {1/scaleX,1/scaleY},new float[]{offsetFrameX/scaleX,offsetFrameY/scaleY});
 	}
 	
-	//устанавливаем границы текстуры как сумму векторов вектора отступа и вектора текстуры
+	//устанавливаем границы текстуры как сумму векторов вектора отступа и вектора текстуры vec2
 	public void setTextureBounds(float[] textureVector,	float[] offsetTextureVector) {			
 		
 		if (textureVector!=null && textureVector.length != 2) {try {

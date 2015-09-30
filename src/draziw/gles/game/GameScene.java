@@ -2,12 +2,6 @@ package draziw.gles.game;
 
 import java.util.ArrayList;
 
-import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
-import com.badlogic.gdx.physics.bullet.linearmath.btVector3;
-
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -22,77 +16,62 @@ import draziw.gles.objects.Custom3D;
 import draziw.gles.objects.CubeMap3D;
 import draziw.gles.objects.Font2D;
 import draziw.gles.objects.GLESObject;
+import draziw.gles.objects.Plane3D;
 import draziw.gles.objects.Player;
 import draziw.gles.objects.PointLight3D;
 import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
 
-public class GameScene {
+public abstract class GameScene {
 	
 	Context context;
 		
 	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();		
 	
-	public int lightMoveDirection=-1;
-	public int lightMoveDirectionCount=300;
 	
 	public SceneElements sceneElements;
 	
-	private GameControllers controllers;
-	private GLESCamera camera;
-	private TextureLoader textureLoader;
-	ResourceManager resources;
-	
-	private CubeMap3D cubeMap;
-	private PointLight3D glPointLight;
-
-	
+	public GameControllers controllers;
+	public GLESCamera camera;
+	public TextureLoader textureLoader;
+	public ResourceManager resources;
+		
 	public Player player;
+		
 	
-	public GameScene(Context cc) {
-		this.context=cc;		
+	protected boolean isReady=false;
+	
+	protected GameScene() {
+		
 	}
 	
-	public void init(GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources) {
+	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources) {
+		this.context=context;
 		this.controllers=gameController;
 		this.camera=camera;		
 		this.textureLoader=mTextureLoader;
 		this.resources=mResources;
 				
-		clearPrograms();						
-				
+		clearPrograms();
 		
-		//создаем элементы из записанной сцены и загружаем ресурсы
-		sceneElements=new SceneElements("scene1",resources);		
 		
-				
-		
-		cubeMap = new CubeMap3D(textureLoader.getTexture(0),context);
-		cubeMap.scaleM(15f, 15f, 15f);
-		sceneLayer.add(cubeMap);
-		
-		glPointLight = new PointLight3D(textureLoader.getTexture(0));
-		glPointLight.translateM(0.0f,0.0f,15f);	
-		glPointLight.setLuminance(0.001f);
-		
+       
+        isReady=true;
+	}
+	
+	public void placeControllers() {
+		placeControllers(controllers,sceneLayer);		
+	}
+	
+	/*public void loadSceneFromFile(String sceneName,PointLight3D glPointLight,Player mPlayer) {
+		if (mPlayer!=null) this.player=
+		sceneElements=new SceneElements("scene1",resources);
 		placeScene(glPointLight,sceneElements,sceneLayer);
-								
-		placeControllers(gameController,sceneLayer);
-											
-		//sceneLayer.add(glPointLight);
-		
-		Bullet.init();
-		
-		btCollisionObject groundObject = new btCollisionObject();
-		btSphereShape ballShape = new btSphereShape(0.5f);
-		
-		btCollisionObject ballObject = new btCollisionObject();
-	    ballObject.setCollisionShape(ballShape);
-	   
-		//ballObject.setWorldTransform();
-		//чтобы использовать bullet из libgdx нужно vec3 и matrix4 тащить оттуда
-		
-
+	}*/
+	
+	public void loadSceneFromFile(String sceneName,PointLight3D glPointLight) {
+		sceneElements=new SceneElements("scene1",resources);
+		placeScene(glPointLight,sceneElements,sceneLayer);
 	}
 	
 	private void placeControllers(GameControllers gameController,
@@ -117,7 +96,9 @@ public class GameScene {
 			//for (int pos=13;pos<14;pos++) {
 				Custom3D tekElement;
 				if (sceneElements.getName(pos).equals("player")) {
-					player = new Player(textureLoader.getTexture(1),resources,sceneElements.getName(pos));
+					if (player==null) { // если он уже есть не надо создавать
+						player = new Player(textureLoader.getTexture(1),resources,sceneElements.getName(pos));						
+					} 
 					tekElement=player;
 				} else {
 					tekElement = new Custom3D(textureLoader.getTexture(1),resources,sceneElements.getName(pos));
@@ -141,19 +122,34 @@ public class GameScene {
 			}		
 	}
 
-	public void onDrawFrame(float timer) {
+	public abstract void onDrawFrame(float timer);
+	
+	
+	public float[] defaultDraw(float timer) {
+		float[] viewMatrix = camera.getViewMatrix();
+		
+		int currentProgramHandler = 0;
+		for (GLESObject tekObject:sceneLayer) {
+			if (currentProgramHandler!=tekObject.getShaderProgramInstance().programHandler) {
+				currentProgramHandler=tekObject.getShaderProgramInstance().programHandler;
+				GLES20.glUseProgram(currentProgramHandler);	
+			}
+			if (tekObject.isGUI()) {
+				tekObject.draw(camera.getGUIView(),camera.getGUIMatrix(),timer);
+			} else {
+				tekObject.draw(viewMatrix,camera.getProjectionMatrix(),timer);
+			}
+		}
+		
+		return viewMatrix;
+	}
+	/*{
 		
 		// матрицу вида полуваем один раз в цикле отрисовки, потому что она расчетная
 		// каждый раз при вызове getViewMatrix будет пересчитываться
 		
-		
-		// сначала перемещаем камеру, если надо, потом получаем матрицу вида
-		//camera.moveByController(timer,controllers);
-		
-		player.moveByController(timer, controllers);
-		
-		camera.setByPlayerTranslateRotation(player);
-		
+				
+		gameLogicsFrame(timer);
 		
 		
 		float[] viewMatrix = camera.getViewMatrix();
@@ -186,7 +182,7 @@ public class GameScene {
 				lightMoveDirection*=-1;
 			}
 			glPointLight.translateM(0,0,-0.01f*lightMoveDirection);
-		}
+		}*/
 		
 		//Matrix.rotateM(viewMatrix, 0, 0.1f, 0f, 1f, 0f);
 		
@@ -194,11 +190,29 @@ public class GameScene {
 		glRectangle1.resetMatrix();
 		glRectangle1.moveBack();		
 		glRectangle1.scaleByGeometri();
-		glRectangle1.rotate(angle, 0.5f, 1f, 0f);*/
+		glRectangle1.rotate(angle, 0.5f, 1f, 0f);
 		
 		//GLES20.glDisable(GLES20.GL_BLEND);
 			
-	}
+	}*/
+	
+	/*public void gameLogicsFrame(float timer) {
+		// сначала перемещаем камеру, если надо, потом получаем матрицу вида
+				//camera.moveByController(timer,controllers);
+				
+			   	 final float delta = Math.min(1f/30f, timer);
+			
+			     if (!collision) {
+			    	 player.translateM(0f, -delta, 0f);			         						         
+			     }
+			     playerCollisionObject.setWorldTransform(player.getGdxMatrix());
+			     collision = checkCollision();
+			    //player.actualizeObjectMatrix();
+				player.moveByController(timer, controllers);
+				
+				camera.setByPlayerTranslateRotation(player);
+		
+	}*/
 	
 	private void clearPrograms() {	
 		// при повороте activity, нужно пересоздавать сингтоны shaderProgram
@@ -211,7 +225,53 @@ public class GameScene {
 		   CubeMap3D.reset();
 		   ControllerView.reset();
 		   Player.reset();
+		   Plane3D.reset();
 	   }
+	
+	/*boolean checkCollision() {
+    	CollisionObjectWrapper co0 = new CollisionObjectWrapper(playerCollisionObject);
+        CollisionObjectWrapper co1 = new CollisionObjectWrapper(groundCollisionObject);
+
+        btCollisionAlgorithmConstructionInfo ci = new btCollisionAlgorithmConstructionInfo();
+        ci.setDispatcher1(dispatcher);
+        btCollisionAlgorithm algorithm = new btSphereBoxCollisionAlgorithm(null, ci, co0.wrapper, co1.wrapper, false); 
+
+        btDispatcherInfo info = new btDispatcherInfo();
+        btManifoldResult result = new btManifoldResult(co0.wrapper, co1.wrapper);
+
+        algorithm.processCollision(co0.wrapper, co1.wrapper, info, result);
+
+        boolean r = result.getPersistentManifold().getNumContacts() > 0;
+
+        result.dispose();
+        info.dispose();
+        algorithm.dispose();
+        ci.dispose();
+        co1.dispose();
+        co0.dispose();
+
+        return r;
+    }
+	
+	public void dispose () {
+		//TODO нужно как-то реализовать очищение ресурсов, при умирании приложения
+		// либо при паузе очищать все, а при resume восстанавливать
+		groundCollisionObject.dispose();
+	    groundShape.dispose();
+	
+	    playerCollisionObject.dispose();
+	    playerShape.dispose();
+	
+	    dispatcher.dispose();
+	    collisionConfig.dispose();
+	}*/
+
+	public boolean isReady() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	
 	   
 	   
 

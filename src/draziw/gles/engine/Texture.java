@@ -10,6 +10,7 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
 public class Texture {
+	private Bitmap img1;
 	private int resId;
 	protected int id;
 	private int slot;
@@ -23,6 +24,13 @@ public class Texture {
 		this.resId=mResId;
 	}
 	
+	public Texture(int mType,int mId,int mSlot, Bitmap mBitmap) {
+		this.id=mId;
+		this.slot=mSlot;
+		this.type=mType;
+		this.img1=mBitmap;
+	}
+
 	public void setSize(int mSizeX, int mSizeY) {
 		this.sizeX=mSizeX;
 		this.sizeY=mSizeY;
@@ -76,18 +84,19 @@ public class Texture {
      	GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
      	GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);		
 		
-		
-        InputStream is1 = mContext.getResources().openRawResource(this.resId);
-        Bitmap img1;
-        try {
-        	img1 = BitmapFactory.decodeStream(is1);
-        } finally {
-        	try {
-        		is1.close();
-        	} catch(IOException e) {
-        		//e.printStackTrace();
-        	}
-        }                        
+		if (img1==null) {
+	        InputStream is1 = mContext.getResources().openRawResource(this.resId);
+	        
+	        try {
+	        	img1 = BitmapFactory.decodeStream(is1);
+	        } finally {
+	        	try {
+	        		is1.close();
+	        	} catch(IOException e) {
+	        		//e.printStackTrace();
+	        	}
+	        }
+		}
             
 		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, img1, 0);
 		

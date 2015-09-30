@@ -3,6 +3,7 @@ package draziw.gles.engine;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 
 public class TextureLoader {
@@ -43,6 +44,40 @@ public class TextureLoader {
 			textures.add(mTexture);
 	        
 	        										
+	}
+	
+	public void loadSingleTexture(int resId,int slotId) {
+		
+		int[] texturesId = new int[1];
+		
+		GLES20.glGenTextures(texturesId.length, texturesId, 0);					
+		
+		GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 1);
+		
+		Texture mTexture = 	new Texture(GLES20.GL_TEXTURE_2D,
+				texturesId[0],
+				slotId,
+				resId);						        
+		mTexture.load(context);
+		textures.add(mTexture);
+		
+	}
+	
+	public void loadSingleTexture(Bitmap bitmap,int slotId) {
+		
+		int[] texturesId = new int[1];
+		
+		GLES20.glGenTextures(texturesId.length, texturesId, 0);					
+		
+		GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 1);
+		
+		Texture mTexture = 	new Texture(GLES20.GL_TEXTURE_2D,
+				texturesId[0],
+				slotId,
+				bitmap);						        
+		mTexture.load(context);
+		textures.add(mTexture);
+		
 	}
 	
 	public void confirmTextures() {	

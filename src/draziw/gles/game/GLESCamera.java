@@ -113,7 +113,7 @@ public class GLESCamera {
 		final float bottom = -height*minDispRatio;
 		final float top = height*minDispRatio;
 		final float near = 1.0f;
-		final float far = 40.0f;
+		final float far = 500.0f;
 		
 		glScreenSize=new float[]{right, top};
 

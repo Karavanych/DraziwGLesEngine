@@ -1,5 +1,7 @@
 package draziw.gles.objects;
 
+import com.badlogic.gdx.math.Matrix4;
+
 import android.opengl.Matrix;
 import android.util.Log;
 import draziw.gles.engine.MyMatrix;
@@ -10,7 +12,9 @@ import draziw.gles.game.GameControllers.Controller;
 
 public class Player extends Custom3D {
 	
-	private float[] mRotationMatrix = new float[16];		
+	public float[] mRotationMatrix = new float[16];
+	private Matrix4 gdxTransform=new Matrix4();	
+	private float maxDistance=9999f;
 
 	public Player(Texture texture, ResourceManager resources, String modelName) {
 		super(texture, resources, modelName);
@@ -51,6 +55,11 @@ public class Player extends Custom3D {
 		
 	}
 	
+	public void setMaxMovement(float mDistance) {
+		this.maxDistance=mDistance;
+		
+	}
+	
 	// независимый поворот, от позиции
 	// rotateIndependent
 	public void rotateI(float angleInDegrees,float x,float y,float z) {				
@@ -64,21 +73,44 @@ public class Player extends Custom3D {
 	}	
 	
 	public void moveForward(float distance) {
+		
+		if (distance>0) distance=Math.min(distance, maxDistance); else distance=Math.max(distance, -maxDistance);
+		
 		position[0]+=mRotationMatrix[8]*distance;
 		position[1]+=mRotationMatrix[9]*distance;
 		position[2]+=mRotationMatrix[10]*distance;	
 	}
 
-	public void moveRight(float distance) {		
+	public void moveRight(float distance) {	
+		
+		if (distance>0) distance=Math.min(distance, maxDistance); else distance=Math.max(distance, -maxDistance);
+		
 		position[0]+=mRotationMatrix[0]*distance;
 		position[1]+=mRotationMatrix[1]*distance;
 		position[2]+=mRotationMatrix[2]*distance;
 	}
 
-	public void moveUp(float distance) {		
+	public void moveUp(float distance) {
+		
+		if (distance>0) distance=Math.min(distance, maxDistance); else distance=Math.max(distance, -maxDistance);
+		
 		position[0]+=mRotationMatrix[4]*distance;
 		position[1]+=mRotationMatrix[5]*distance;
 		position[2]+=mRotationMatrix[6]*distance;
+	}
+	
+	public Matrix4 getGdxMatrix() {
+		gdxTransform.set(actualizeObjectMatrix());
+		return gdxTransform;		
+	}
+	
+	public float[] actualizeObjectMatrix() {
+		Matrix.setIdentityM(mObjectMVPMatrix,0);
+		Matrix.translateM(mObjectMVPMatrix, 0, position[0], position[1], position[2]);		
+		
+		Matrix.multiplyMM(mObjectMatrix, 0,mObjectMVPMatrix , 0,mRotationMatrix , 0);
+		
+		return mObjectMVPMatrix;
 	}
 	
 	@Override
@@ -86,11 +118,8 @@ public class Player extends Custom3D {
 		
 		// mObjectMVPMatrix используется просто как вспомогательная матрица
 		// для создания матрицы положения
-		
-		Matrix.setIdentityM(mObjectMVPMatrix,0);
-		Matrix.translateM(mObjectMVPMatrix, 0, position[0], position[1], position[2]);		
-		
-		Matrix.multiplyMM(mObjectMatrix, 0,mObjectMVPMatrix , 0,mRotationMatrix , 0);
+		//actualizeObjectMatrix();
+		actualizeObjectMatrix();
 
 		/*Matrix.setIdentityM(mTranslationMatrix,0);
 		Matrix.translateM(mTranslationMatrix, 0, position[0], position[1], position[2]);
@@ -106,7 +135,7 @@ public class Player extends Custom3D {
 	
 	public float[] getRotation() {
 		return mRotationMatrix;
-	}
+	}		
 	
 	public void moveByController(float timer, GameControllers controllers) {
 		Controller controllersLeft = controllers

@@ -2,6 +2,7 @@ package draziw.gles.engine;
 
 
 
+import draziw.gles.game.GameScene;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -13,7 +14,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 
-public class MainActivity extends Activity {
+public class MainGLESActivity extends Activity {
 	private GLSurfaceView mSurfaceView;
 	private GLES20Renderer mRender;
 	
@@ -66,6 +67,10 @@ public class MainActivity extends Activity {
 
 		// ставим наш glSurfaceView как корневой View активити.
 		setContentView(mSurfaceView);
+	}
+	
+	public void setScene(GameScene scene) {
+		mRender.setScene(scene);
 	}
 	
 	@Override
@@ -138,7 +143,5 @@ public class MainActivity extends Activity {
 		super.onStop();
 		RPause = true;		
 	}
-	
-	
-	
+		
 }

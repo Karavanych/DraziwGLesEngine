@@ -7,6 +7,7 @@ import draziw.gles.game.GLESCamera;
 import draziw.gles.game.GameControllers;
 import draziw.gles.game.GameScene;
 import draziw.gles.game.ResourceManager;
+import draziw.test.project.TestScene;
 
 import android.content.Context;
 
@@ -52,10 +53,10 @@ public class GLES20Renderer implements Renderer {
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {		
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
 
-		/*
-		 * GLES20.glEnable(GLES20.GL_CULL_FACE);
-		 * GLES20.glCullFace(GLES20.GL_BACK); GLES20.glFrontFace(GLES20.GL_CCW);
-		 */
+		
+		  GLES20.glEnable(GLES20.GL_CULL_FACE);
+		  GLES20.glCullFace(GLES20.GL_BACK); GLES20.glFrontFace(GLES20.GL_CCW);
+		 
 
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -77,19 +78,21 @@ public class GLES20Renderer implements Renderer {
 		this.width = width;
 		this.height = height;
 			
+		//а че тут проверять, если ее нет, пусть падает, без нее всеравно смысла нет запускать
+		//if (gameScene != null) {
+			
+			if (gameScene.isReady()) {
+				textureLoader.confirmTextures();
+				resources.confirmBuffers();
+			} else {			
+				GLESCamera camera=new GLESCamera(width, height);
+				gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
+				gameScene.init(context,camera, gameController,textureLoader,resources);
+			}
 
-		if (gameScene != null) {
-			textureLoader.confirmTextures();
-			resources.confirmBuffers();
-		} else {
-
-			// инициализации матриц вида, проекций и мира , получение размеров мира
-			GLESCamera camera=new GLESCamera(width, height);
-			gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
-			gameScene = new GameScene(context);
-			gameScene.init(camera, gameController,textureLoader,resources);
-		}
-				
+			
+		//} 
+			
 
 		// сначала загружаем текстуры, потом всякие вертексы и шейдеры
 
@@ -111,6 +114,8 @@ public class GLES20Renderer implements Renderer {
 		 * videoViewport.right) / 2, (videoCapture.getFrameHeight() -
 		 * videoViewport.bottom) / 2);
 		 */
+			
+		getDeltaTime();// для инициализации
 
 	}
 
@@ -144,9 +149,9 @@ public class GLES20Renderer implements Renderer {
 	private float getDeltaTime() {
 		long deltaTime = SystemClock.uptimeMillis()-lastTime;
 		lastTime+=deltaTime;
-		return deltaTime/500f;		
+		return deltaTime*0.002f;		
 	}
-
+	
 	
 
 	/*
@@ -205,5 +210,12 @@ public class GLES20Renderer implements Renderer {
 		}
 
 	}
+
+	public void setScene(GameScene scene) {
+		//TODO если мы будем менять сцену принудительно, надо переделать добавление камеры и контроллера
+		
+		this.gameScene = scene;
+		
+	}		
 
 }
