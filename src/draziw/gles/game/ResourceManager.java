@@ -54,10 +54,12 @@ public class ResourceManager {
 		
 	}
 	
-	public void loadSingleModelData(String modelName) {
-		final int[] buffers = new int[1];
-		GLES20.glGenBuffers(1, buffers, 0);
-		loadBufferToVBO(modelName,buffers[0]);
+	public void loadSingleModelData(String modelName,boolean override) {
+		if (bufferIndex.get(modelName)==null | override) {
+			final int[] buffers = new int[1];
+			GLES20.glGenBuffers(1, buffers, 0);
+			loadBufferToVBO(modelName,buffers[0]);
+		}
 	}
 
 	private void loadBufferToVBO(String modelName, int vntBufferHolder) {

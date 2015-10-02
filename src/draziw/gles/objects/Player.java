@@ -3,22 +3,23 @@ package draziw.gles.objects;
 import com.badlogic.gdx.math.Matrix4;
 
 import android.opengl.Matrix;
-import android.util.Log;
 import draziw.gles.engine.MyMatrix;
 import draziw.gles.engine.Texture;
 import draziw.gles.game.GameControllers;
 import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
+import draziw.simple.physics.Collision;
 
 public class Player extends Custom3D {
+	
+	public Collision collision;
 	
 	public float[] mRotationMatrix = new float[16];
 	private Matrix4 gdxTransform=new Matrix4();	
 	private float maxDistance=9999f;
 
 	public Player(Texture texture, ResourceManager resources, String modelName) {
-		super(texture, resources, modelName);
-		
+		super(texture, resources, modelName);		
 		
 		/* Для напоминания как соотносятся компоненты матриц
 		 
@@ -135,7 +136,7 @@ public class Player extends Custom3D {
 	
 	public float[] getRotation() {
 		return mRotationMatrix;
-	}		
+	}	
 	
 	public void moveByController(float timer, GameControllers controllers) {
 		Controller controllersLeft = controllers
@@ -162,6 +163,18 @@ public class Player extends Custom3D {
 				rotateI(-controllersRight.getMovementX() * timer*5,0, 1, 0);
 			}
 		}
+	}
+	
+	public void enableCollision(Collision mCollision) {
+		if (mCollision!=null) {
+			this.collision=mCollision;
+		} else {
+			this.collision=new Collision();
+		}
+	}
+	
+	public void clearCollisions() {
+		collision.clearCollisions();
 	}
 
 }

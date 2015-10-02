@@ -39,9 +39,9 @@ public class GLES20Renderer implements Renderer {
 	GameScene gameScene;
 	GameControllers gameController;
 
-	private TextureLoader textureLoader;
+	public TextureLoader textureLoader;
 
-	private ResourceManager resources;
+	public ResourceManager resources;
 
 	public GLES20Renderer(Context cc) {
 		context = cc;
@@ -54,9 +54,8 @@ public class GLES20Renderer implements Renderer {
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
 
 		
-		  GLES20.glEnable(GLES20.GL_CULL_FACE);
-		  GLES20.glCullFace(GLES20.GL_BACK); GLES20.glFrontFace(GLES20.GL_CCW);
-		 
+		GLES20.glEnable(GLES20.GL_CULL_FACE);
+		GLES20.glCullFace(GLES20.GL_BACK); GLES20.glFrontFace(GLES20.GL_CCW);		 
 
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
