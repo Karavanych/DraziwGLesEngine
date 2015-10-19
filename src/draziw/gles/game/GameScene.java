@@ -2,6 +2,7 @@ package draziw.gles.game;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 
 import android.content.Context;
@@ -23,8 +24,9 @@ import draziw.gles.objects.PointLight3D;
 import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
 import draziw.simple.physics.AnimationActor;
+import draziw.simple.physics.AnimationActor.AnimationActorListener;
 
-public abstract class GameScene {
+public abstract class GameScene implements AnimationActorListener {
 	
 	Context context;
 		
@@ -127,9 +129,14 @@ public abstract class GameScene {
 	public abstract void onDrawFrame(float timer);
 	
 	public void actorsRun(float timer) {
-		for (AnimationActor each:actors) {
-			each.run(timer);
+		ListIterator<AnimationActor> iterator = actors.listIterator();  
+		AnimationActor each;
+		while (iterator.hasNext()) {		
+			each=iterator.next();
+			if (each.isRun) each.run(timer);
+			else if (each.destroy) iterator.remove();			
         }
+		each=null;
 	}
 	
 	public float[] defaultDraw(float timer) {
@@ -276,6 +283,11 @@ public abstract class GameScene {
 	public boolean isReady() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	@Override
+	public void onAnimationEnd(AnimationActor mActor) {
+		
 	}
 
 	
