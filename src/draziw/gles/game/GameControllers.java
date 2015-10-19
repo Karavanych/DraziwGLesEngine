@@ -9,9 +9,16 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 public class GameControllers {
+	
+	public interface ControllersListener {
+		public void controllerEnable(Controller controller);
+		public void controllerDisable(Controller controller);
+	}
 
-	public static int CONTROLLER_LEFT = 11;
-	public static int CONTROLLER_RIGHT = 22;
+	public static int CONTROLLER_NO = 0x0;
+	public static int CONTROLLER_LEFT = 0x1;
+	public static int CONTROLLER_RIGHT = 0x2;
+	public static int CONTROLLER_CLICK = 0x4;
 		
 
 	private int width;
@@ -21,6 +28,8 @@ public class GameControllers {
 	float glKoefWidth = 1;
 	float glKoefHeight = 1;
 	float glSensitivity=1;
+	
+	public int enabledControllers=CONTROLLER_NO;
 
 	//ArrayList<Controller> controlles = new ArrayList<Controller>();
 	HashMap<Integer, Controller> controllersByType=new HashMap<Integer,Controller>();
@@ -39,8 +48,29 @@ public class GameControllers {
 		this.glSensitivity = Math.min(glKoefWidth,glKoefHeight)*5;
 		
 		// создаем сразу контроллеры нужных типов
-		controllersByType.put(CONTROLLER_LEFT, new Controller(CONTROLLER_LEFT));
-		controllersByType.put(CONTROLLER_RIGHT, new Controller(CONTROLLER_RIGHT));
+		enableController(CONTROLLER_LEFT);
+		enableController(CONTROLLER_RIGHT);
+		
+		//controllersByType.put(CONTROLLER_LEFT, new Controller(CONTROLLER_LEFT));
+		//controllersByType.put(CONTROLLER_RIGHT, new Controller(CONTROLLER_RIGHT));
+	}
+	
+	public void enableController(int controllersType) {
+		enabledControllers|=controllersType;
+		if (controllersByType.get(controllersType)==null) {
+			controllersByType.put(controllersType, new Controller(controllersType));
+		}
+	}
+	
+	public void enableController(int controllersType,ControllersListener mListener) {
+		enabledControllers|=controllersType;
+		if (controllersByType.get(controllersType)==null) {
+			controllersByType.put(controllersType, new Controller(controllersType,mListener));
+		}
+	}
+	
+	public boolean isEnable(int controllersType) {
+		return ((enabledControllers & controllersType) == controllersType);
 	}
 	
 	public int count() {
@@ -62,8 +92,8 @@ public class GameControllers {
 	public void add(int actionIndex, float x, float y) {
 
 		// Все контроллеры уже созданы зараннее,
-		// в этом методе мы только включаем контроллеры и ассоциируем их с точкой косания 
-			
+		// в этом методе мы только включаем контроллеры и ассоциируем их с точкой касания 
+					
 		int controllerType = getControllerZone(x, y);
 				
 		Controller currentController = controllersByType.get(controllerType);				
@@ -73,6 +103,14 @@ public class GameControllers {
 		currentController.enable(actionIndex, x, y);
 		controllersById.put(actionIndex,currentController);
 		
+		if (isEnable(CONTROLLER_CLICK)) {
+			currentController = controllersByType.get(CONTROLLER_CLICK);
+			// клик это всегда последнее касание...и первое поднятие... не зависит от actionIndex
+			currentController.enable(0, x, y);			
+		}
+		
+		
+		
 	}
 
 	public void remove(int pointerIndex) {
@@ -81,6 +119,13 @@ public class GameControllers {
 		if (current!=null) {
 			current.disable();
 			controllersById.remove(pointerIndex);			
+		}
+		
+		if (isEnable(CONTROLLER_CLICK)) {
+			Controller currentController = controllersByType.get(CONTROLLER_CLICK);
+			if (currentController.isEnable()) {
+				currentController.disable();
+			}			
 		}
 		
 		/*Iterator<Entry<Integer, Controller>> iterator = controllers.entrySet().iterator();
@@ -101,7 +146,7 @@ public class GameControllers {
 		while (iterator.hasNext()) {
 			Entry<Integer, Controller> pair = iterator.next();
 			Controller current = pair.getValue();
-			current.disable();			
+			if (current.isEnable()) current.disable();			
 		}
 		// а затем очищаем полностью мап по id
 		controllersById.clear();
@@ -138,6 +183,7 @@ public class GameControllers {
 		public int actionId;
 		public float sx, sy; // start x, start y
 		public float x, y; // current x, current y
+		private ControllersListener listener;
 
 		/*public Controller(int controllerType, int actionIndex, float startX,
 				float startY) {
@@ -152,8 +198,14 @@ public class GameControllers {
 			
 		}
 
+		public Controller(int controllersType, ControllersListener mListener) {
+			this(controllersType);
+			this.listener=mListener;
+		}
+
 		public void disable() {
-			this.enable=false;			
+			this.enable=false;	
+			if (listener!=null) listener.controllerDisable(this);
 		}
 
 		public void enable(int actionId, float startX, float startY) {
@@ -164,6 +216,8 @@ public class GameControllers {
 			this.x = startX;
 			this.y = startY;
 			this.enable=true;
+			
+			if (listener!=null) listener.controllerEnable(this);
 		}
 
 		public boolean isEnable() {			

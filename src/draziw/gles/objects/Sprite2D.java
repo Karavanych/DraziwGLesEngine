@@ -7,12 +7,19 @@ import java.nio.ShortBuffer;
 
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
+import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.game.GameControllers.ControllersListener;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
 public class Sprite2D extends GLESObject {
+	
+	public static float BASE_SPRITE_WIDTH=2f; // это исходя из начальних вертексов спрайта
+	public static float BASE_SPRITE_HEIGHT=2f; // см. pointVFA 
+	
+	public boolean isGUI=false;
 	
 	public static ShaderProgram sShaderProgram;
 	
@@ -76,60 +83,65 @@ public class Sprite2D extends GLESObject {
 		}
 	}
 	
+	public Sprite2D(Texture mTexture,float[] leftTopRightBottomTextureCoords) {
+		super(mTexture);
+		
+		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
+				float[] pointVFA = {
+						 1f,-1f,0.0f,
+						 -1f,-1f,0.0f,
+						 1f,1f,0.0f,
+						-1f,1f,0.0f
+						};
+						ByteBuffer pointVBB = ByteBuffer.allocateDirect(pointVFA.length * 4);
+						pointVBB.order(ByteOrder.nativeOrder());
+						vertextBuffer = pointVBB.asFloatBuffer();
+						vertextBuffer.put(pointVFA);
+						vertextBuffer.position(0); 				
+												
+						// по умолчанию вся текстура на полигон, нужен вектор смещения, вектор определяющий размер текстуры и вектор анимации
+				setTextureCoord(leftTopRightBottomTextureCoords);
+						
+				//зададим индексы, предидущие массивы определяли просто координаты вершин и текстурные координаты, соответствующие вершинам
+				// а здесь мы определим порядок следования вершин через индексы					
+						
+				short[] planeISA = {
+								2,3,1,
+								0,2,1,
+						};
+				
+				ByteBuffer planeIBB = ByteBuffer.allocateDirect(planeISA.length * 2);
+				planeIBB.order(ByteOrder.nativeOrder());
+				verticesIndex = planeIBB.asShortBuffer();
+				verticesIndex.put(planeISA);
+				verticesIndex.position(0);
+		
+	}
 	
 	public Sprite2D(Texture mTexture) {
-		 super(mTexture);
-						
-		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
-		float[] pointVFA = {
-				 1f,-1f,0.0f,
-				 -1f,-1f,0.0f,
-				 1f,1f,0.0f,
-				-1f,1f,0.0f
-				};
-				ByteBuffer pointVBB = ByteBuffer.allocateDirect(pointVFA.length * 4);
-				pointVBB.order(ByteOrder.nativeOrder());
-				vertextBuffer = pointVBB.asFloatBuffer();
-				vertextBuffer.put(pointVFA);
-				vertextBuffer.position(0); 				
-				
-				
-
-				// по умолчанию вся текстура на полигон, нужен вектор смещения, вектор определяющий размер текстуры и вектор анимации
-		float[] planeTFA = {
-						// 1f,1f, 0,1f, 1f,0,0,0
-				1f,1f,
-				0f,1f,
-				1f,0,
-				0,0
-				};
-		
-				ByteBuffer planeTBB = ByteBuffer.allocateDirect(planeTFA.length * 4);
-				planeTBB.order(ByteOrder.nativeOrder());
-				textureCoordBuffer = planeTBB.asFloatBuffer();
-				textureCoordBuffer.put(planeTFA);
-				textureCoordBuffer.position(0);
-				
-		//зададим индексы, предидущие массивы определяли просто координаты вершин и текстурные координаты, соответствующие вершинам
-		// а здесь мы определим порядок следования вершин через индексы	
-		
-				
-		short[] planeISA = {
-						2,3,1,
-						0,2,1,
-				};
-		
-		ByteBuffer planeIBB = ByteBuffer.allocateDirect(planeISA.length * 2);
-		planeIBB.order(ByteOrder.nativeOrder());
-		verticesIndex = planeIBB.asShortBuffer();
-		verticesIndex.put(planeISA);
-		verticesIndex.position(0);
-		
+		 this(mTexture, new float[]{0f,0f,1f,1f});		
 	}
 	
 	// устанавливаем текстурные координаты для спрайтовой текструры состоящей их scaleX кадров по горизонтали и scaleY кадров по вертикали
 	public void setRelativeTextureBounds(float scaleX,float scaleY,int offsetFrameX,int offsetFrameY) {
 		setTextureBounds(new float[] {1/scaleX,1/scaleY},new float[]{offsetFrameX/scaleX,offsetFrameY/scaleY});
+	}
+	
+	public void setTextureCoord(float[] leftTopRightBottom) {
+		float[] planeTFA = {
+				// 1f,1f, 0,1f, 1f,0,0,0
+				leftTopRightBottom[2],leftTopRightBottom[3],
+				leftTopRightBottom[0],leftTopRightBottom[3],
+				leftTopRightBottom[2],leftTopRightBottom[1],
+				leftTopRightBottom[0],leftTopRightBottom[1]
+		};
+
+		ByteBuffer planeTBB = ByteBuffer.allocateDirect(planeTFA.length * 4);
+		planeTBB.order(ByteOrder.nativeOrder());
+		textureCoordBuffer = planeTBB.asFloatBuffer();
+		textureCoordBuffer.put(planeTFA);
+		textureCoordBuffer.position(0);	
+		
 	}
 	
 	//устанавливаем границы текстуры как сумму векторов вектора отступа и вектора текстуры vec2
@@ -227,6 +239,29 @@ public class Sprite2D extends GLESObject {
 			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
 		}
 		return sShaderProgram;
+	}
+	
+	public void setGeometriByScaling() {
+		setGeometry(mObjectMatrix[0]*BASE_SPRITE_WIDTH,mObjectMatrix[5]*BASE_SPRITE_HEIGHT,mObjectMatrix[10]);		
+	}
+	
+	@Override
+	public boolean isCollidePoint(float[] mPos) {
+		if (mPos[0]>position[0]-geometry[0]*0.5f && mPos[0]<position[0]+geometry[0]*0.5f
+				&& 	mPos[1]>position[1]-geometry[1]*0.5f && mPos[1]<position[1]+geometry[1]*0.5f) {
+			return true;
+		} else {
+			return false;
+		}		
+	}
+	
+	public void setGUI(boolean gui) {
+		this.isGUI=gui;
+	}
+	
+	@Override
+	public boolean isGUI() {		
+		return isGUI;
 	}
 
 

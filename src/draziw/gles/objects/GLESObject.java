@@ -40,6 +40,20 @@ public abstract class GLESObject {
 		Matrix.scaleM(mObjectMatrix, 0, x, y, z);			
 	}
 	
+	
+	public void translateI(float x,float y,float z) {
+		mObjectMatrix[12]+=x;
+		mObjectMatrix[13]+=y;
+		mObjectMatrix[14]+=z;
+		MyMatrix.vec3add(position, x, y, z);
+	}
+	
+	public void setPositionI(float x,float y,float z) {
+		mObjectMatrix[12]=x;
+		mObjectMatrix[13]=y;
+		mObjectMatrix[14]=z;
+		MyMatrix.vec3set(position, x, y, z);
+	}
 
 	public void translateM(float x,float y,float z) {
 		MyMatrix.vec3add(position, x, y, z);
@@ -77,6 +91,10 @@ public abstract class GLESObject {
 	}
 	
 	public boolean isGUI() {
+		return false;
+	}
+	
+	public boolean isCollidePoint(float[] mPos) {
 		return false;
 	}
 	

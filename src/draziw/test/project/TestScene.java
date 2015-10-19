@@ -158,8 +158,7 @@ public class TestScene extends GameScene {
 	public void onDrawFrame(float timer) {
 		
 		// матрицу вида полуваем один раз в цикле отрисовки, потому что она расчетная
-		// каждый раз при вызове getViewMatrix будет пересчитываться
-		
+		// каждый раз при вызове getViewMatrix будет пересчитываться		
 				
 		gameLogicsFrame(timer);
 		

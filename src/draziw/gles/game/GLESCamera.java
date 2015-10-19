@@ -116,6 +116,7 @@ public class GLESCamera {
 		final float far = 500.0f;
 		
 		glScreenSize=new float[]{right, top};
+				
 
 		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near,
 				far);
@@ -123,6 +124,7 @@ public class GLESCamera {
 		
 		
 		Matrix.orthoM(mOrthoGUI, 0, left,right, bottom, top, near, far);
+		
 				
 		//Matrix.multiplyMM(mOrthoGUI, 0, mOrthoGUI, 0, getViewMatrix(), 0);
 		

@@ -1,6 +1,7 @@
 package draziw.gles.game;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 
 import android.content.Context;
@@ -21,13 +22,14 @@ import draziw.gles.objects.Player;
 import draziw.gles.objects.PointLight3D;
 import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
+import draziw.simple.physics.AnimationActor;
 
 public abstract class GameScene {
 	
 	Context context;
 		
-	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();		
-	
+	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();	
+	public LinkedList<AnimationActor> actors=new LinkedList<AnimationActor>(); // используется для простых анимаций	
 	
 	public SceneElements sceneElements;
 	
@@ -124,6 +126,11 @@ public abstract class GameScene {
 
 	public abstract void onDrawFrame(float timer);
 	
+	public void actorsRun(float timer) {
+		for (AnimationActor each:actors) {
+			each.run(timer);
+        }
+	}
 	
 	public float[] defaultDraw(float timer) {
 		float[] viewMatrix = camera.getViewMatrix();
