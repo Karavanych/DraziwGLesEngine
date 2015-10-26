@@ -20,6 +20,7 @@ import com.badlogic.gdx.physics.bullet.collision.btManifoldResult;
 import com.badlogic.gdx.physics.bullet.collision.btSphereBoxCollisionAlgorithm;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 
+import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.TextureLoader;
 import draziw.gles.game.GLESCamera;
 import draziw.gles.game.GameControllers;
@@ -56,9 +57,9 @@ public class TestScene extends GameScene {
 	private boolean collision=false;	
 	
 	@Override
-	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources) {
+	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources,ShaderManager mShaders) {
 		
-		super.init(context, camera, gameController,mTextureLoader, mResources);
+		super.init(context, camera, gameController,mTextureLoader, mResources, mShaders);
 		
 		
 			
@@ -68,11 +69,11 @@ public class TestScene extends GameScene {
 		//создаем элементы из записанной сцены и загружаем ресурсы
 		
 		
-		cubeMap = new CubeMap3D(textureLoader.getTexture(0),context);
+		cubeMap = new CubeMap3D(textureLoader.getTexture(0),shaders,context);
 		cubeMap.scaleM(15f, 15f, 15f);
 		sceneLayer.add(cubeMap);
 		
-		glPointLight = new PointLight3D(textureLoader.getTexture(0));
+		glPointLight = new PointLight3D(textureLoader.getTexture(0),shaders);
 		glPointLight.translateM(0.0f,0.0f,15f);	
 		glPointLight.setLuminance(0.001f);
 		
@@ -196,15 +197,15 @@ public class TestScene extends GameScene {
 		// сначала перемещаем камеру, если надо, потом получаем матрицу вида
 				//camera.moveByController(timer,controllers);
 				
-			   	 final float delta = Math.min(1f/30f, timer);
+			   	 final double delta = Math.min(1f/30f, timer);
 			
 			     if (!collision) {
-			    	 player.translateM(0f, -delta, 0f);			         						         
+			    	 player.translateM(0f, (float) -delta, 0f);			         						         
 			     }
 			     playerCollisionObject.setWorldTransform(player.getGdxMatrix());
 			     collision = checkCollision();
 			    //player.actualizeObjectMatrix();
-				player.moveByController(timer, controllers);
+				player.moveByController((float) timer, controllers);
 				
 				camera.setByPlayerTranslateRotation(player);
 		

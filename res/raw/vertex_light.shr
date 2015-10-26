@@ -1,0 +1,47 @@
+attribute vec4 aPosition;
+attribute vec2 aTextureCoord;
+attribute vec3 aNormal;
+
+varying vec2 vTextureCoord;
+varying float vDiffuse;
+
+uniform float uLuminance;
+uniform vec3 uLightPos;
+uniform mat4 uObjectMatrix;
+uniform mat4 uMVMatrix;
+
+void main() {
+
+	// “рансформируем вертексы в позицию вида
+	vec3 modelViewVertex = vec3(uMVMatrix * aPosition);
+	
+	// “рансформируем нормали в позицию вида
+	vec3 modelViewNormal = vec3(uMVMatrix * vec4(aNormal, 0.0)); 
+	
+	// –асчитываем дисстанцию дл€ затухани€ освещени€
+	float distance = length(uLightPos - modelViewVertex);
+	
+	// ѕолучим нормализованный вектор направлени€  от источника света к вертексам
+	vec3 lightVector = normalize(uLightPos - modelViewVertex);
+	
+	// –асчитаем скаларное произведение (dot product) вектора света и вектора нормали
+   	// ћаксимальна€ €ркость будет в случае если эти ветора однонаправленные , 0.1 - минимальна€ освещенность   	
+   	float diffuse = max(dot(modelViewNormal, lightVector), 0.1);
+   	
+   	// –ассчитаем угасание в зависимости от дистанции
+   	vDiffuse = diffuse * (1.0 / (0.9 + (uLuminance * distance * distance)));
+   	gl_Position = uObjectMatrix*aPosition;
+   	vTextureCoord = aTextureCoord;
+   	
+ }
+   	
+[FRAGMENT]
+precision highp float;
+varying vec2 vTextureCoord;
+varying float vDiffuse;
+uniform sampler2D uSampler;
+void main() {
+
+	gl_FragColor = texture2D(uSampler,vTextureCoord)*vDiffuse;
+	
+}

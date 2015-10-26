@@ -1,5 +1,12 @@
 package draziw.gles.engine;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.regex.Pattern;
+
+import android.content.Context;
+import android.content.res.Resources;
 import android.opengl.GLES20;
 import android.util.Log;
 
@@ -7,7 +14,41 @@ public class ShaderProgram {
 	
 	public int programHandler;
 	
+	
+	public ShaderProgram(String name,Context context) {
+
+			// load from file resource
+			String shaderStr="";			
+	        Resources res = context.getResources();
+	        String packageName = context.getApplicationContext().getPackageName();
+	        //+ ":raw/" + name;
+	        int res_id = res.getIdentifier(packageName+":raw/" + name, null, packageName);
+	        //Log.d("MyLogs", fileName);
+	        //int res_id = res.getIdentifier(this.getClass().getPackage().getName() + ":raw/" + name+".shr", null, null);
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(res.openRawResource(res_id)));
+	        String sline ="";	        
+	        while(sline!=null){
+	            try {
+	                sline = reader.readLine();
+	                if(sline!=null)shaderStr+=sline+"\n";
+	            } catch (IOException e) {}
+	        }
+       
+		
+	        String[] split_vs_fr = shaderStr.split(Pattern.quote("[FRAGMENT]"));
+	        String o_vs=split_vs_fr[0];
+	        String o_fr=split_vs_fr[1];
+	        
+	        attachProgram(o_vs,o_fr);
+		
+	}
+	
 	public ShaderProgram(String mVertexShaderCode, String mFragmentShaderCode) {
+		attachProgram(mVertexShaderCode,mFragmentShaderCode);		
+	}
+	
+	
+	public void attachProgram(String mVertexShaderCode, String mFragmentShaderCode) {
 		int pointVertexShader = loadShader(GLES20.GL_VERTEX_SHADER, mVertexShaderCode);
 		int pointFragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, mFragmentShaderCode);
 		programHandler = GLES20.glCreateProgram();
@@ -54,4 +95,5 @@ public class ShaderProgram {
 	public static void onAllLoaded() {
 		GLES20.glReleaseShaderCompiler();
 	}
+	
 }

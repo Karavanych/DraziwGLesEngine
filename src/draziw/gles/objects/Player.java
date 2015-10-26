@@ -9,6 +9,7 @@ import draziw.gles.game.GameControllers;
 import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
 import draziw.simple.physics.Collision;
+import draziw.gles.engine.ShaderProgram;
 
 public class Player extends Custom3D {
 	
@@ -18,8 +19,8 @@ public class Player extends Custom3D {
 	private Matrix4 gdxTransform=new Matrix4();	
 	private float maxDistance=9999f;
 
-	public Player(Texture texture, ResourceManager resources, String modelName) {
-		super(texture, resources, modelName);		
+	public Player(Texture texture,ShaderProgram shader, ResourceManager resources, String modelName) {
+		super(texture,shader,resources, modelName);		
 		
 		/* Для напоминания как соотносятся компоненты матриц
 		 

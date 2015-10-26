@@ -50,8 +50,8 @@ public class Rectangle2D extends GLESObject {
 	private ShortBuffer verticesIndex;
 	
 
-	public Rectangle2D(Texture texture) {
-		super(texture);
+	public Rectangle2D(Texture texture,ShaderProgram shader) {
+		super(texture,shader);
 		
 		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
 		float[] pointVFA = {
@@ -135,19 +135,5 @@ public class Rectangle2D extends GLESObject {
 	     GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, verticesIndex);
 		
 	}
-	
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-
-	public static void reset() {
-		sShaderProgram=null;		
-	}
-
 
 }

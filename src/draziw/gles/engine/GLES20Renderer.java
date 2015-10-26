@@ -30,7 +30,7 @@ public class GLES20Renderer implements Renderer {
 
 	boolean wasActionDown = false;
 
-
+	public static final float GAME_SPEED= 0.000000002f;
 
 	// делаем таймер как у usnavii
 	private float timeAnimationInterval = .5f;
@@ -42,6 +42,8 @@ public class GLES20Renderer implements Renderer {
 	public TextureLoader textureLoader;
 
 	public ResourceManager resources;
+
+	private ShaderManager shaderManager;
 
 	public GLES20Renderer(Context cc) {
 		context = cc;
@@ -66,6 +68,7 @@ public class GLES20Renderer implements Renderer {
 		textureLoader.loadTextures();
 		
 		resources = new ResourceManager(context);
+		shaderManager = new ShaderManager(context);
 
 	}
 
@@ -86,7 +89,7 @@ public class GLES20Renderer implements Renderer {
 			} else {			
 				GLESCamera camera=new GLESCamera(width, height);
 				gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
-				gameScene.init(context,camera, gameController,textureLoader,resources);
+				gameScene.init(context,camera, gameController,textureLoader,resources,shaderManager);
 			}
 
 			
@@ -146,9 +149,9 @@ public class GLES20Renderer implements Renderer {
 	}
 	
 	private float getDeltaTime() {
-		long deltaTime = SystemClock.uptimeMillis()-lastTime;
+		long deltaTime = System.nanoTime()-lastTime;
 		lastTime+=deltaTime;
-		return deltaTime*0.002f;		
+		return deltaTime*GAME_SPEED;		
 	}
 	
 	

@@ -9,33 +9,10 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
-import draziw.gles.engine.ShaderProgram;
+import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.Texture;
 
 public class CubeMap3D extends GLESObject {
-	
-	public static ShaderProgram sShaderProgram;
-	
-	public static final String VERTEX_SHADER_CODE = 
-			  "attribute vec4 aPosition;         		   \n" // объ€вл€ем вход€щие данные
-			 + "attribute vec3 aTextureCoord;	           \n" // объ€вл€ем вход€щие данные
-			 + "varying vec3 vTextureCoord;            	   \n" // дл€ передачи во фрагментный шейдер		
-			 + "uniform mat4 uObjectMatrix;		           \n"			
-			 + "void main() { " 					
-			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
-			 +  " vTextureCoord = aTextureCoord;     \n" 					
-		+	"}"	;
-		
-	
-	public static final String FRAGMENT_SHADER_CODE = 
-			"precision highp float;"
-		+	"varying vec3 vTextureCoord;                        \n" 
-		+   "varying float vDiffuse;"
-		+	"uniform samplerCube uSampler;                 \n"
-		+	"void main() {							\n"
-		+	" gl_FragColor = textureCube(uSampler,vTextureCoord);	\n"
-		+	"}"	;
-
 	
 	//shader holder
 	private int aPositionHolder;
@@ -58,8 +35,8 @@ public class CubeMap3D extends GLESObject {
 	
 	PointLight3D lightObject;
 
-	public CubeMap3D(Texture texture,Context context) {
-		super(texture);	
+	public CubeMap3D(Texture texture,ShaderManager shaders,Context context) {
+		super(texture,shaders.getShader("cubemap"));	
 		
 		float[] faces   =  {  1.0f,  1.0f,  1.0f,    -1.0f,  1.0f,  1.0f,    -1.0f, -1.0f,  1.0f,     1.0f, -1.0f,  1.0f,
                 1.0f,  1.0f,  1.0f,     1.0f, -1.0f,  1.0f,     1.0f, -1.0f, -1.0f,     1.0f,  1.0f, -1.0f,
@@ -162,17 +139,5 @@ public class CubeMap3D extends GLESObject {
 	    // GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,indexCount);
 		
 	}
-
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-	public static void reset() {
-		sShaderProgram=null;		
-	}	
 
 }

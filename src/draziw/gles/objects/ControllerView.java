@@ -12,36 +12,13 @@ import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
-import draziw.gles.engine.MyMatrix;
+
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
 
 public class ControllerView extends GLESObject {
-	
-	public static ShaderProgram sShaderProgram;
-	
-	// повертексное освещение
-	public static final String VERTEX_SHADER_CODE = 
-			   "attribute vec4 aPosition;         		   \n" // объ€вл€ем вход€щие данные
-			 + "attribute vec2 aTextureCoord;	           \n" // объ€вл€ем вход€щие данные			 			 	
-			 + "varying vec2 vTextureCoord;            	   \n" // дл€ передачи во фрагментный шейдер
-			 + "uniform mat4 uObjectMatrix;		           \n"
-			 + "void main() { "			 			 			 
-			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
-			 +  " vTextureCoord = aTextureCoord;     \n" 					
-		+	"}"	;
-		
-	
-	public static final String FRAGMENT_SHADER_CODE = 
-			"precision highp float;"
-		+	"varying vec2 vTextureCoord;                        \n" 		
-		+	"uniform sampler2D uSampler;            		     \n"
-		+	"void main() {										\n"
-		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
-		+	"}"	;		
-
 	
 	//shader holder
 	private int aPositionHolder;	
@@ -60,8 +37,8 @@ public class ControllerView extends GLESObject {
 	float[] mMVMatrix = new float[16];
 	
 
-	public ControllerView(Texture texture,Context context,String modelName) {
-		super(texture);				
+	public ControllerView(Texture texture,ShaderProgram shader,Context context,String modelName) {
+		super(texture,shader);				
 		
 		AssetManager assManager = context.getAssets();
 		InputStream is = null;
@@ -141,18 +118,6 @@ public class ControllerView extends GLESObject {
 		     GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		}
 		
-	}
-
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {			
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-	public static void reset() {
-		sShaderProgram=null;		
 	}
 	
 	public ByteBuffer readToByteBuffer(InputStream inStream) throws IOException {

@@ -12,28 +12,6 @@ import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 
 public class Cube3D extends GLESObject {
-	
-	public static ShaderProgram sShaderProgram;
-	
-	public static final String VERTEX_SHADER_CODE = 
-			  "attribute vec4 aPosition;         		   \n" // объ€вл€ем вход€щие данные
-			 + "attribute vec4 aColor;	         		   \n" // объ€вл€ем вход€щие данные
-			 + "varying vec4 vColor;             		   \n" // дл€ передачи во фрагментный шейдер			
-			 +	"uniform mat4 uObjectMatrix;			\n"
-			 + "void main() {                    		   \n"
-			 //+	" gl_PointSize = 15.0;					\n"
-			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
-			 + " vColor = aColor;     \n" 					
-		+	"}"	;
-		
-	
-	public static final String FRAGMENT_SHADER_CODE = 
-			"precision highp float;"
-		+   "varying vec4 vColor;" // получаем цвет из вертексного шейдера
-		+	"void main() {							\n"
-		+	" gl_FragColor = vColor;	\n" // задаем цвет текстуры
-		+	"}"	;
-
 
 	private int aPositionHolder;
 
@@ -52,8 +30,8 @@ public class Cube3D extends GLESObject {
 	private int indexCount;
 	
 
-	public Cube3D(Texture texture) {
-		super(texture);
+	public Cube3D(Texture texture,ShaderProgram shader) {
+		super(texture,shader);
 		
 		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
 		float[] pointVFA = {
@@ -154,18 +132,6 @@ public class Cube3D extends GLESObject {
 		 		
 	     GLES20.glDrawElements(GLES20.GL_TRIANGLES,indexCount,GLES20.GL_UNSIGNED_SHORT, verticesIndex);
 		
-	}
-
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-	public static void reset() {
-		sShaderProgram=null;		
 	}
 
 }

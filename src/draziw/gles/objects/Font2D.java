@@ -19,9 +19,8 @@ import android.util.Log;
 
 public class Font2D extends GLESObject{
 	
-	public static ShaderProgram sShaderProgram;
 	
-	public static final String VERTEX_SHADER_CODE = 
+	/*public static final String VERTEX_SHADER_CODE = 
 			  "attribute vec4 aPosition;         		   \n" // объ€вл€ем вход€щие данные
 			 + "attribute vec2 aTextureCoord;	         		   \n" // объ€вл€ем вход€щие данные
 			 + "varying vec2 vTextureCoord;             		   \n" // дл€ передачи во фрагментный шейдер			
@@ -38,7 +37,7 @@ public class Font2D extends GLESObject{
 			"uniform sampler2D uSampler;                 \n"
 		+	"void main() {							\n"
 		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
-		+	"}"	;
+		+	"}"	;*/
 	
 	
 	FloatBuffer vertextBuffer;
@@ -69,8 +68,8 @@ public class Font2D extends GLESObject{
 	}
 
 	
-	public Font2D(Texture mTexture,String str) {
-		super(mTexture);
+	public Font2D(Texture mTexture,ShaderProgram shader,String str) {
+		super(mTexture,shader);
 		
 		drawVertex=6;								
 		setText(str);		
@@ -301,19 +300,15 @@ public class Font2D extends GLESObject{
 
 		return size;
 	}
-
-
+	
 	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
+	public boolean isGUI() {
+		// TODO Auto-generated method stub
+		return true;
 	}
-
-
-	public static void reset() {
-		sShaderProgram=null;		
+	
+	public void setGeometriByScaling() {
+		setGeometry(mObjectMatrix[0]*Sprite2D.BASE_SPRITE_WIDTH,mObjectMatrix[5]*Sprite2D.BASE_SPRITE_HEIGHT,mObjectMatrix[10]);		
 	}
 
 }

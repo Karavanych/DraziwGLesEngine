@@ -14,9 +14,9 @@ import android.util.Log;
 
 public class Plane3D extends GLESObject {
 	
-	public static ShaderProgram sShaderProgram;
+	//public static ShaderProgram sShaderProgram;
 	
-	public static final String VERTEX_SHADER_CODE = 
+	/*public static final String VERTEX_SHADER_CODE = 
 			  "attribute vec4 aPosition;         		   \n" // объ€вл€ем вход€щие данные
 			 + "attribute vec2 aTextureCoord;	         		   \n" // объ€вл€ем вход€щие данные
 			 + "varying vec2 vTextureCoord;             		   \n" // дл€ передачи во фрагментный шейдер
@@ -36,7 +36,7 @@ public class Plane3D extends GLESObject {
 			"uniform sampler2D uSampler;                 \n"
 		+	"void main() {							\n"
 		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
-		+	"}"	;
+		+	"}"	;*/
 	
 	FloatBuffer vertextBuffer;
 	FloatBuffer textureCoordBuffer;
@@ -77,8 +77,8 @@ public class Plane3D extends GLESObject {
 	}
 	
 	// planeVector - from 0,0 to float[3] vector - plane // 2,2,0
-	public Plane3D(Texture mTexture,float[] planeVector,boolean ccw) {
-		 super(mTexture);
+	public Plane3D(Texture mTexture,ShaderProgram shader,float[] planeVector,boolean ccw) {
+		 super(mTexture,shader);
 						
 		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
 		/*float[] pointVFA = {
@@ -227,7 +227,7 @@ public class Plane3D extends GLESObject {
 	}
 
 
-	public void animationFrameUpdate(float ctime) {		  		   
+	public void animationFrameUpdate(double ctime) {		  		   
 	        if(ctime < 0){ctime++;}
 	        tekFrame=startFrame+(int)(ctime*(countFrames));	                	                 	  	
 	}
@@ -240,19 +240,6 @@ public class Plane3D extends GLESObject {
 	
 	public boolean isAnimated() {
 		if (countFrames>0) return true; else return false;
-	}
-
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-
-	public static void reset() {
-		sShaderProgram=null;		
 	}
 	
 }

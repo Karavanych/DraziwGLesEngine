@@ -286,6 +286,12 @@ public class GLESCamera {
 		position[2]=mObj.position[2]+3;		
 	}
 	
+	public void setPositionI(float x,float y,float z) {
+		position[0]=x;
+		position[1]=y;
+		position[2]=z;		
+	}
+	
 	
 	public void setByPlayerTranslateRotation(Player mPlayer) {
 		float[] mPlRt = mPlayer.getRotation();		
@@ -309,8 +315,43 @@ public class GLESCamera {
 				
 	}
 	
-	public void lookAtGLESObject(GLESObject mObj) {
+	public void lookAt(float x,float y,float z) {
 		
+		float[] tmpForward = new float[]{
+			position[0]-x,
+			position[1]-y,
+			position[2]-z};
+		
+		MyMatrix.normalize(tmpForward);				
+		
+		float[] tmpUp= new float[] {
+				viewMatrix[1],viewMatrix[5],viewMatrix[9]
+		};
+		
+		float[] tmpRight = MyMatrix.cross(tmpUp,tmpForward);
+		
+		MyMatrix.normalize(tmpRight);
+		
+		tmpUp=MyMatrix.cross(tmpForward, tmpRight);
+		
+		MyMatrix.normalize(tmpUp);				
+		
+		viewMatrix[0] = tmpRight[0];//right[0];
+		viewMatrix[4] = tmpRight[1];//right[1];
+		viewMatrix[8] = tmpRight[2];//right[2];
+
+		viewMatrix[1] = tmpUp[0];//up[0];
+		viewMatrix[5] = tmpUp[1];//up[1];
+		viewMatrix[9] = tmpUp[2];//up[2];
+
+		viewMatrix[2] = tmpForward[0];//forward[0];
+		viewMatrix[6] = tmpForward[1];//forward[1];
+		viewMatrix[10] = tmpForward[2];//forward[2];
+		
+	}
+	
+	public void lookAtGLESObject(GLESObject mObj) {
+		lookAt(mObj.position[0],mObj.position[1],mObj.position[2]);		
 	}
 
 }

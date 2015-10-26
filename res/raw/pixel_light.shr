@@ -1,0 +1,43 @@
+attribute vec4 aPosition;
+attribute vec2 aTextureCoord;
+attribute vec3 aNormal;
+
+varying vec2 vTextureCoord;
+varying vec3 vPosition;
+varying vec3 vNormal;
+
+uniform mat4 uObjectMatrix;
+uniform mat4 uMVMatrix;
+
+void main() {
+
+	vPosition = vec3(uMVMatrix * aPosition);
+	vTextureCoord = aTextureCoord;
+	vNormal = vec3(uMVMatrix * vec4(aNormal, 0.0));
+	gl_Position = uObjectMatrix * aPosition;
+	
+	}
+
+[FRAGMENT]
+
+precision mediump float;
+
+uniform vec3 uLightPos;
+uniform float uLuminance;
+
+varying vec3 vPosition;
+varying vec2 vTextureCoord;
+varying vec3 vNormal;
+
+uniform sampler2D uSampler;
+
+void main() {
+
+	float distance = length(uLightPos - vPosition);
+	vec3 lightVector = normalize(uLightPos - vPosition);
+	float diffuse = max(dot(vNormal, lightVector), 0.1);
+	diffuse = diffuse * (1.0 / (1.0 + (uLuminance * distance * distance)));
+	gl_FragColor = texture2D(uSampler,vTextureCoord);
+	gl_FragColor.rbg *= diffuse;
+	
+	}

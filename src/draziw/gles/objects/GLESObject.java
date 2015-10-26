@@ -15,16 +15,15 @@ public abstract class GLESObject {
 	public float[] position = new float[3];
 	public float[] geometry=new float[3];
 
-	public int shaderProgramHandler;
+	public int shaderProgramHandler;	
 	
-	public abstract ShaderProgram getShaderProgramInstance();
-	
+	public boolean isAnimated=false;
 	
 	public abstract void initializeShaderParam();
 	public abstract void draw(float[] viewMatrix, float[] projectionMatrix, float timer); // timer для анимации кадров	
 	
-	public GLESObject(Texture texture) {
-		shaderProgramHandler = getShaderProgramInstance().programHandler;
+	public GLESObject(Texture texture,ShaderProgram shader) {
+		shaderProgramHandler = shader.programHandler;
 		this.mTexture=texture;
 		Matrix.setIdentityM(mObjectMatrix,0);
 		this.initializeShaderParam();
@@ -97,6 +96,16 @@ public abstract class GLESObject {
 	public boolean isCollidePoint(float[] mPos) {
 		return false;
 	}
+	
+	public void setAnimated(boolean mEnable) {
+		isAnimated=mEnable;
+	}
+	
+	public boolean isAnimated() {
+		return isAnimated;
+	}
+	
+	
 	
 	
 	

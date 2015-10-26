@@ -11,6 +11,9 @@ import android.util.Log;
 
 
 
+import draziw.gles.animation.AnimationActor;
+import draziw.gles.animation.AnimationActor.AnimationActorListener;
+import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.TextureLoader;
 import draziw.gles.objects.ControllerView;
 import draziw.gles.objects.Cube3D;
@@ -23,8 +26,6 @@ import draziw.gles.objects.Player;
 import draziw.gles.objects.PointLight3D;
 import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
-import draziw.simple.physics.AnimationActor;
-import draziw.simple.physics.AnimationActor.AnimationActorListener;
 
 public abstract class GameScene implements AnimationActorListener {
 	
@@ -39,24 +40,28 @@ public abstract class GameScene implements AnimationActorListener {
 	public GLESCamera camera;
 	public TextureLoader textureLoader;
 	public ResourceManager resources;
+	public ShaderManager shaders;
 		
 	public Player player;
 		
 	
 	protected boolean isReady=false;
+
+	
 	
 	protected GameScene() {
 		
 	}
 	
-	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources) {
+	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources, ShaderManager mShaders) {
 		this.context=context;
 		this.controllers=gameController;
 		this.camera=camera;		
 		this.textureLoader=mTextureLoader;
 		this.resources=mResources;
+		this.shaders=mShaders;
 				
-		clearPrograms();
+		shaders.clear();
 		
 		
        
@@ -81,14 +86,14 @@ public abstract class GameScene implements AnimationActorListener {
 	private void placeControllers(GameControllers gameController,
 			ArrayList<GLESObject> sceneLayer) {				
 			
-			ControllerView tekElement = new ControllerView(textureLoader.getTexture(1),context,"controller1");
+			ControllerView tekElement = new ControllerView(textureLoader.getTexture(1),shaders.getShader("simple_texture"),context,"controller1");
 			
 			//нельзя делать scale, потому что порядок - transtale, rotate,scale
 			//tekElement.scale(.05f, 0.05f, 1f);
 			tekElement.setController(gameController.getControllerByType(GameControllers.CONTROLLER_LEFT));			
 			sceneLayer.add(tekElement);		
 			
-			tekElement = new ControllerView(textureLoader.getTexture(1),context,"controller1");			
+			tekElement = new ControllerView(textureLoader.getTexture(1),shaders.getShader("simple_texture"),context,"controller1");			
 			tekElement.setController(gameController.getControllerByType(GameControllers.CONTROLLER_RIGHT));						
 			sceneLayer.add(tekElement);				
 				
@@ -101,11 +106,11 @@ public abstract class GameScene implements AnimationActorListener {
 				Custom3D tekElement;
 				if (sceneElements.getName(pos).equals("player")) {
 					if (player==null) { // если он уже есть не надо создавать
-						player = new Player(textureLoader.getTexture(1),resources,sceneElements.getName(pos));						
+						player = new Player(textureLoader.getTexture(1),shaders.getShader("pixel_light"),resources,sceneElements.getName(pos));						
 					} 
 					tekElement=player;
 				} else {
-					tekElement = new Custom3D(textureLoader.getTexture(1),resources,sceneElements.getName(pos));
+					tekElement = new Custom3D(textureLoader.getTexture(1),shaders.getShader("pixel_light"),resources,sceneElements.getName(pos));
 				}
 				
 				tekElement.setPositionM(sceneElements.getX(pos), sceneElements.getY(pos), sceneElements.getZ(pos));
@@ -144,8 +149,8 @@ public abstract class GameScene implements AnimationActorListener {
 		
 		int currentProgramHandler = 0;
 		for (GLESObject tekObject:sceneLayer) {
-			if (currentProgramHandler!=tekObject.getShaderProgramInstance().programHandler) {
-				currentProgramHandler=tekObject.getShaderProgramInstance().programHandler;
+			if (currentProgramHandler!=tekObject.shaderProgramHandler) {
+				currentProgramHandler=tekObject.shaderProgramHandler;
 				GLES20.glUseProgram(currentProgramHandler);	
 			}
 			if (tekObject.isGUI()) {
@@ -230,16 +235,7 @@ public abstract class GameScene implements AnimationActorListener {
 	
 	private void clearPrograms() {	
 		// при повороте activity, нужно пересоздавать сингтоны shaderProgram
-		   Font2D.reset();
-		   Cube3D.reset();
-		   Sprite2D.reset();
-		   Rectangle2D.reset();
-		   Custom3D.reset();
-		   PointLight3D.reset();
-		   CubeMap3D.reset();
-		   ControllerView.reset();
-		   Player.reset();
-		   Plane3D.reset();
+		   shaders.clear();
 	   }
 	
 	/*boolean checkCollision() {

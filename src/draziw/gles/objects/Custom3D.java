@@ -20,108 +20,6 @@ import draziw.gles.engine.Texture;
 import draziw.gles.game.ResourceManager;
 
 public class Custom3D extends GLESObject {
-	
-	public static ShaderProgram sShaderProgram;
-	
-	/*// повертексное освещение
-	public static final String VERTEX_SHADER_CODE_VERTEX_LIGHT = 
-			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
-			 + "attribute vec2 aTextureCoord;	           \n" // объявляем входящие данные
-			 + "attribute vec3 aNormal;                   \n"		// Per-vertex normal information we will pass in.
-			 + "uniform vec3 uLightPos;                   \n"	
-			 + "varying vec2 vTextureCoord;            	   \n" // для передачи во фрагментный шейдер
-			 + "varying float vDiffuse;"
-			 + "uniform float uLuminance;"
-			 + "uniform mat4 uObjectMatrix;		           \n"
-			 + "uniform mat4 uMVMatrix;                    \n"
-			 + "void main() { " +
-			 "                   		   \n"
-			 	// Для реализации освещения
-				// Трансформируем вертексы в позицию вида
-			 + "   vec3 modelViewVertex = vec3(uMVMatrix * aPosition);          \n"
-			 	// Трансформируем нормали в позицию вида
-			 + "   vec3 modelViewNormal = vec3(uMVMatrix * vec4(aNormal, 0.0));     \n"
-			 	// Расчитываем дисстанцию для затухания освещения
-			 + "   float distance = length(uLightPos - modelViewVertex);             \n"
-			 	// Получим нормализованный вектор направления  от источника света к вертексам
-			 + "   vec3 lightVector = normalize(uLightPos - modelViewVertex);        \n"
-			 	// Расчитаем скаларное произведение (dot product) вектора света и вектора нормали
-   			    // Максимальная яркость будет в случае если эти ветора однонаправленные , 0.1 - минимальная освещенность
-			 + "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);       \n" 	  		  													  
-			 	// Рассчитаем угасание в зависимости от дистанции
-			 + "   vDiffuse = diffuse * (1.0 / (0.9 + (uLuminance * distance * distance)));  \n"
-			 //	+ "   vDiffuse = diffuse;  \n"		 
-			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
-			 +  " vTextureCoord = aTextureCoord;     \n" 					
-		+	"}"	;
-		
-	
-	public static final String FRAGMENT_SHADER_CODE_VERTEX_LIGHT = 
-			"precision highp float;"
-		+	"varying vec2 vTextureCoord;                        \n" 
-		+   "varying float vDiffuse;"
-		+	"uniform sampler2D uSampler;                 \n"
-		+	"void main() {							\n"
-		+	" gl_FragColor = texture2D(uSampler,vTextureCoord)*vDiffuse;	\n"
-		+	"}"	;*/
-	
-	
-	
-	//попиксельное освещение
-	public static final String VERTEX_SHADER_CODE_PIXEL_LIGHT = 
-			   "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
-			 + "attribute vec2 aTextureCoord;	           \n" // объявляем входящие данные
-			 + "attribute vec3 aNormal;                    \n"		// Per-vertex normal information we will pass in.
-			
-			 + "varying vec2 vTextureCoord;            	   \n" // для передачи во фрагментный шейдер
-			 + "varying vec3 vPosition;                   \n"
-			 + "varying vec3 vNormal;        			   \n"
-			
-			 + "uniform mat4 uObjectMatrix;		           \n"
-			 + "uniform mat4 uMVMatrix;                    \n"
-			 + "void main() { " +
-			 "                   		   \n"
-				// Transform the vertex into eye space.
-			 + "   vPosition = vec3(uMVMatrix * aPosition);             \n"
-				// Pass through the color.
-			 + "   vTextureCoord = aTextureCoord;                         \n"
-				// Transform the normal's orientation into eye space.
-			 + "   vNormal = vec3(uMVMatrix * vec4(aNormal, 0.0));      \n"
-				// gl_Position is a special variable used to store the final position.
-				// Multiply the vertex by the matrix to get the final point in normalized screen coordinates.
-			 + "   gl_Position = uObjectMatrix * aPosition;              \n"      		  
-			 + "} ";
-		
-	
-	public static final String FRAGMENT_SHADER_CODE_PIXEL_LIGHT = 
-	
-		  "precision mediump float;       \n"		// Set the default precision to medium. We don't need as high of a 
-			// precision in the fragment shader.
-		+ "uniform vec3 uLightPos;       \n"	    // The position of the light in eye space.
-		+ "uniform float uLuminance;"
-		
-		+ "varying vec3 vPosition;		\n"		// Interpolated position for this fragment.
-		+ "varying vec2 vTextureCoord;          \n"		// This is the color from the vertex shader interpolated across the 			
-		+ "varying vec3 vNormal;         \n"		// Interpolated normal for this fragment.
-		
-		+ "uniform sampler2D uSampler;                 \n"
-		
-		// The entry point for our fragment shader.
-		+ "void main()                    \n"		
-		+ "{                              \n"
-		// Will be used for attenuation.
-		+ "   float distance = length(uLightPos - vPosition);                          \n"
-		// Get a lighting direction vector from the light to the vertex.
-		+ "   vec3 lightVector = normalize(uLightPos - vPosition);                     \n" 	
-		// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-		// pointing in the same direction then it will get max illumination.
-		+ "   float diffuse = max(dot(vNormal, lightVector), 0.1);                     \n" 	  		  													  
-		// Add attenuation. 
-		+ "   diffuse = diffuse * (1.0 / (1.0 + (uLuminance * distance * distance)));  \n"
-		// Multiply the color by the diffuse illumination level to get final output color.
-		+ "   gl_FragColor = texture2D(uSampler,vTextureCoord);               \n"		
-		+ "   gl_FragColor.rbg *= diffuse;               \n"
-		+ "}                                                                           \n";
 
 	
 	//shader holder
@@ -147,8 +45,8 @@ public class Custom3D extends GLESObject {
 
 	
 
-	public Custom3D(Texture texture,ResourceManager resources,String modelName) {
-		super(texture);		
+	public Custom3D(Texture texture,ShaderProgram shader,ResourceManager resources,String modelName) {
+		super(texture,shader);		
 		
 		indexCount=resources.getVertexCount(modelName);	
 		
@@ -235,19 +133,6 @@ public class Custom3D extends GLESObject {
 		
 	}
 
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			//sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE_VERTEX_LIGHT,FRAGMENT_SHADER_CODE_VERTEX_LIGHT);
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE_PIXEL_LIGHT,FRAGMENT_SHADER_CODE_PIXEL_LIGHT);
-		}
-		return sShaderProgram;
-	}
-
-	public static void reset() {
-		sShaderProgram=null;		
-	}
-	
 	
 	public void setLight(PointLight3D mLight) {
 		lightObject=mLight;

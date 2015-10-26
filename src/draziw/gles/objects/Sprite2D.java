@@ -21,7 +21,7 @@ public class Sprite2D extends GLESObject {
 	
 	public boolean isGUI=false;
 	
-	public static ShaderProgram sShaderProgram;
+	/*public static ShaderProgram sShaderProgram;
 	
 	public static final String VERTEX_SHADER_CODE = 
 			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
@@ -43,7 +43,7 @@ public class Sprite2D extends GLESObject {
 			"uniform sampler2D uSampler;                 \n"
 		+	"void main() {							\n"
 		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
-		+	"}"	;
+		+	"}"	;*/
 	
 	FloatBuffer vertextBuffer;
 	FloatBuffer textureCoordBuffer;
@@ -83,8 +83,8 @@ public class Sprite2D extends GLESObject {
 		}
 	}
 	
-	public Sprite2D(Texture mTexture,float[] leftTopRightBottomTextureCoords) {
-		super(mTexture);
+	public Sprite2D(Texture mTexture,ShaderProgram shader,float[] leftTopRightBottomTextureCoords) {
+		super(mTexture,shader);
 		
 		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
 				float[] pointVFA = {
@@ -118,8 +118,8 @@ public class Sprite2D extends GLESObject {
 		
 	}
 	
-	public Sprite2D(Texture mTexture) {
-		 this(mTexture, new float[]{0f,0f,1f,1f});		
+	public Sprite2D(Texture mTexture,ShaderProgram shader) {
+		 this(mTexture,shader,new float[]{0f,0f,1f,1f});		
 	}
 	
 	// устанавливаем текстурные координаты для спрайтовой текструры состоящей их scaleX кадров по горизонтали и scaleY кадров по вертикали
@@ -218,7 +218,7 @@ public class Sprite2D extends GLESObject {
 	}
 
 
-	public void animationFrameUpdate(float ctime) {		  		   
+	public void animationFrameUpdate(double ctime) {		  		   
 	        if(ctime < 0){ctime++;}
 	        tekFrame=startFrame+(int)(ctime*(countFrames));	                	                 	  	
 	}
@@ -229,16 +229,8 @@ public class Sprite2D extends GLESObject {
 		animationVector=mAnimVector;					
 	}
 	
-	public boolean isAnimated() {
+	public boolean isSpriteAnimated() {
 		if (countFrames>0) return true; else return false;
-	}
-
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
 	}
 	
 	public void setGeometriByScaling() {
@@ -262,11 +254,6 @@ public class Sprite2D extends GLESObject {
 	@Override
 	public boolean isGUI() {		
 		return isGUI;
-	}
-
-
-	public static void reset() {
-		sShaderProgram=null;		
 	}
 	
 }

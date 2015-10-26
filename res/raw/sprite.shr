@@ -1,0 +1,29 @@
+attribute vec4 aPosition;
+attribute vec2 aTextureCoord;
+
+varying vec2 vTextureCoord;
+
+uniform vec2 uAnimVector;
+uniform float uFrame;
+uniform mat4 uObjectMatrix;
+
+void main() {
+
+	gl_Position = uObjectMatrix*aPosition;
+	vTextureCoord = aTextureCoord+(uAnimVector*uFrame);
+	
+}
+
+[FRAGMENT]
+
+precision mediump float;
+
+varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main() {
+
+	gl_FragColor = texture2D(uSampler,vTextureCoord);
+	
+	}

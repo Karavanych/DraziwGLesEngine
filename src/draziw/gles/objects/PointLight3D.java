@@ -8,12 +8,12 @@ import java.nio.ShortBuffer;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
-import draziw.gles.engine.ShaderProgram;
+import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.Texture;
 
 public class PointLight3D extends GLESObject {
 	
-	public static ShaderProgram sShaderProgram;
+	/*public static ShaderProgram sShaderProgram;
 	
 	public static final String VERTEX_SHADER_CODE = 
 			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
@@ -32,7 +32,7 @@ public class PointLight3D extends GLESObject {
 		+   "varying vec4 vColor;" // получаем цвет из вертексного шейдера
 		+	"void main() {							\n"
 		+	" gl_FragColor = vColor;	\n" // задаем цвет текстуры
-		+	"}"	;
+		+	"}"	;*/
 
 
 	private int aPositionHolder;
@@ -53,8 +53,8 @@ public class PointLight3D extends GLESObject {
 	private float luminance=0.05f;
 	
 
-	public PointLight3D(Texture texture) {
-		super(texture);
+	public PointLight3D(Texture texture,ShaderManager shaders) {
+		super(texture,shaders.getShader("point"));
 		
 		// по умолчанию координаты света 0,0,0, 1f - это для работы с 4x Матрицами
 		modelPosition = new float[]{0f,0f,0f,1f}; 
@@ -116,19 +116,6 @@ public class PointLight3D extends GLESObject {
 		 		
 	     GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
 		
-	}
-	
-	@Override
-	public ShaderProgram getShaderProgramInstance() {		
-		if (sShaderProgram==null) {
-			sShaderProgram=new ShaderProgram(VERTEX_SHADER_CODE,FRAGMENT_SHADER_CODE);
-		}
-		return sShaderProgram;
-	}
-
-
-	public static void reset() {
-		sShaderProgram=null;		
 	}
 	
 	public float[] getMVPosition(float[] viewMatrix) {
