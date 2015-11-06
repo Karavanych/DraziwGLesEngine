@@ -82,6 +82,16 @@ public class Custom3D extends GLESObject {
 		 
 		 Matrix.multiplyMM(mMVMatrix, 0, viewMatrix, 0, mObjectMatrix, 0);
 		 
+		 // над normalMatrix надо бы еще подумать, как-то не очень оптимально
+		 float[] normalMatrix=new float[] {	mMVMatrix[0],mMVMatrix[1],mMVMatrix[2],
+					mMVMatrix[4],mMVMatrix[5],mMVMatrix[6],
+					mMVMatrix[8],mMVMatrix[9],mMVMatrix[10]
+			};// no position, only rotation
+			
+		 GLES20.glUniformMatrix3fv(material.uNormalMatrix, 1, false, normalMatrix, 0);
+
+		 
+		 
 		 Matrix.multiplyMM(mObjectMVPMatrix, 0, projectionMatrix, 0, mMVMatrix, 0);
 		 
 		 GLES20.glUniformMatrix4fv(material.umvp, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
@@ -102,6 +112,7 @@ public class Custom3D extends GLESObject {
 		 
 		 GLES20.glEnableVertexAttribArray(material.aTextureCoord);
 		 GLES20.glVertexAttribPointer(material.aTextureCoord, 2, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE,ResourceManager.TEXTURE_OFFSET); // 24 - offset (3+3)*4float
+		 		
 		 	
 		 if (normalMap!=null) {
 			 		 
@@ -110,12 +121,11 @@ public class Custom3D extends GLESObject {
 
 			 
 			 GLES20.glEnableVertexAttribArray(material.aBitangent);
-			 GLES20.glVertexAttribPointer(material.aBitangent, 3, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE,ResourceManager.BITANGENT_OFFSET); // 24 - offset (3+3)*4float
+			 GLES20.glVertexAttribPointer(material.aBitangent, 3, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE,ResourceManager.BITANGENT_OFFSET); // 24 - offset (3+3)*4float			 			 			 					
 			 
 			 normalMap.use(material.uNormalMap);
 
-		 }
-		 		
+		 } 
 			 
 	     //GLES20.glDrawElements(GLES20.GL_TRIANGLES,indexCount,GLES20.GL_UNSIGNED_SHORT, verticesIndex);
 	     GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,indexCount);	 

@@ -1,6 +1,7 @@
 package draziw.gles.materials;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.PointLight3D;
@@ -12,6 +13,10 @@ public class MaterialNormalMap extends Material {
 		
 	private PointLight3D glPointLight;
 	private float mLuminance;
+	
+	private int uvi;
+	
+	private float[] mViewInverse = new float[16];
 
 	public MaterialNormalMap(ShaderManager shaders) {
 		super(shaders, "basenormal");		
@@ -30,6 +35,8 @@ public class MaterialNormalMap extends Material {
 		umvp=glGetUniformLocation(shaderProgramHandler, "mvp");
 		um=glGetUniformLocation(shaderProgramHandler,"m");
 		uv=glGetUniformLocation(shaderProgramHandler,"v");
+		uNormalMatrix=glGetUniformLocation(shaderProgramHandler,"uNormalMatrix");		
+		
 		uBaseMap = glGetUniformLocation(shaderProgramHandler, "uBaseMap");
 		uNormalMap = glGetUniformLocation(shaderProgramHandler,"uNormalMap");
 		uLightPos = glGetUniformLocation(shaderProgramHandler, "uLightPos");

@@ -29,6 +29,8 @@ public class MaterialPixelLight extends Material {
 		umvp=glGetUniformLocation(shaderProgramHandler, "mvp");
 		um=glGetUniformLocation(shaderProgramHandler,"m");
 		uv=glGetUniformLocation(shaderProgramHandler,"v");
+		uNormalMatrix=glGetUniformLocation(shaderProgramHandler,"uNormalMatrix");
+		
 		uBaseMap = glGetUniformLocation(shaderProgramHandler, "uBaseMap");
 		//uNormalMap = glGetUniformLocation(shaderProgramHandler,"uNormalMap");
 		uLightPos = glGetUniformLocation(shaderProgramHandler, "uLightPos");

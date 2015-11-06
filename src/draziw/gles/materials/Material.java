@@ -21,7 +21,8 @@ public abstract class Material {
 	public int um;
 	public int uv;
 	public int uBaseMap;
-	public int uNormalMap;
+	public int uNormalMap;	
+	public int uNormalMatrix;
 	
 	public static final boolean CONFIRMATION=true;
 	
