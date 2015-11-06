@@ -1,7 +1,7 @@
 package draziw.gles.game;
 
-import draziw.gles.engine.MyMatrix;
 import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.math.MyMatrix;
 import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.Player;
 import android.opengl.Matrix;

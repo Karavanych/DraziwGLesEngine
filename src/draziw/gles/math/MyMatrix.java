@@ -1,4 +1,4 @@
-package draziw.gles.engine;
+package draziw.gles.math;
 
 public class MyMatrix {
 	

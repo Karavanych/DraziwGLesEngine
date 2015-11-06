@@ -3,11 +3,12 @@ package draziw.gles.objects;
 import com.badlogic.gdx.math.Matrix4;
 
 import android.opengl.Matrix;
-import draziw.gles.engine.MyMatrix;
 import draziw.gles.engine.Texture;
 import draziw.gles.game.GameControllers;
 import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.materials.Material;
+import draziw.gles.math.MyMatrix;
 import draziw.simple.physics.Collision;
 import draziw.gles.engine.ShaderProgram;
 
@@ -19,8 +20,8 @@ public class Player extends Custom3D {
 	private Matrix4 gdxTransform=new Matrix4();	
 	private float maxDistance=9999f;
 
-	public Player(Texture texture,ShaderProgram shader, ResourceManager resources, String modelName) {
-		super(texture,shader,resources, modelName);		
+	public Player(Texture texture,Material material, ResourceManager resources, String modelName) {
+		super(texture,material,resources, modelName);		
 		
 		/* Для напоминания как соотносятся компоненты матриц
 		 
@@ -56,6 +57,12 @@ public class Player extends Custom3D {
 		//Matrix.setIdentityM(mTranslationMatrix, 0);
 		
 	}
+	
+	public Player(Texture texture,Texture normalMap,Material material, ResourceManager resources, String modelName) {
+		super(texture,normalMap,material,resources, modelName);	
+		Matrix.setIdentityM(mRotationMatrix, 0);
+	}
+	
 	
 	public void setMaxMovement(float mDistance) {
 		this.maxDistance=mDistance;

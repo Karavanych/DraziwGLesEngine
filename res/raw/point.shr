@@ -3,12 +3,12 @@ attribute vec4 aColor;
 
 varying vec4 vColor;
 
-uniform mat4 uObjectMatrix;
+uniform mat4 mvp;
 
 void main() {
 
 	gl_PointSize = 5.0;
-	gl_Position = uObjectMatrix*aPosition;
+	gl_Position = mvp*aPosition;
 	vColor = aColor;
 	
 }

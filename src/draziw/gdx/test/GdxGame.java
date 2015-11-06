@@ -33,7 +33,7 @@ import com.badlogic.gdx.physics.bullet.collision.btSphereBoxCollisionAlgorithm;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.badlogic.gdx.utils.Array;
 
-import draziw.gles.engine.MyMatrix;
+import draziw.gles.math.MyMatrix;
 
 public class GdxGame extends Game implements ApplicationListener {
 	

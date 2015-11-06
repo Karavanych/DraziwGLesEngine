@@ -17,16 +17,10 @@ import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.materials.Material;
 
 public class ControllerView extends GLESObject {
 	
-	//shader holder
-	private int aPositionHolder;	
-	private int aTextureCoordHolder;
-	private int uObjectMatrixHandler;	
-	private int uSamplerHolder;
-
-
 	private FloatBuffer vntBuffer;	
 
 	private int indexCount;	
@@ -37,8 +31,8 @@ public class ControllerView extends GLESObject {
 	float[] mMVMatrix = new float[16];
 	
 
-	public ControllerView(Texture texture,ShaderProgram shader,Context context,String modelName) {
-		super(texture,shader);				
+	public ControllerView(Texture texture,Material material,Context context,String modelName) {
+		super(texture,material);				
 		
 		AssetManager assManager = context.getAssets();
 		InputStream is = null;
@@ -59,12 +53,12 @@ public class ControllerView extends GLESObject {
 		
 	}
 
-	@Override
+/*	@Override
 	public void initializeShaderParam() {
 		aPositionHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aPosition");// получаем указатель для переменной программы aPosition		
 		aTextureCoordHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aTextureCoord");		
 		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
-		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uSampler");
+		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uBaseMap");
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uObjectMatrixHandler || -1==uSamplerHolder) {
 			Log.e("MyLogs", "Shader ControllerView atributs or uniforms not found.");
@@ -73,7 +67,7 @@ public class ControllerView extends GLESObject {
 			
 		}
 		
-	}
+	}*/
 
 	public void relocateToController() {
 		
@@ -98,19 +92,19 @@ public class ControllerView extends GLESObject {
 			 
 			 //Matrix.multiplyMM(mObjectMVPMatrix, 0,projectionMatrix, 0,mObjectMatrix , 0);				 				 
 			 
-			 GLES20.glUniformMatrix4fv(uObjectMatrixHandler, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
+			 GLES20.glUniformMatrix4fv(material.umvp, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
 			 
-			 mTexture.use(uSamplerHolder);
+			 mTexture.use(material.uBaseMap);
 			 
 			 //GLES20.glUniform1i(uSamplerHolder, mTexture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему
 			 
 			 vntBuffer.position(0);
-			 GLES20.glVertexAttribPointer(aPositionHolder, 3, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE, vntBuffer);
-			 GLES20.glEnableVertexAttribArray(aPositionHolder);			 
+			 GLES20.glVertexAttribPointer(material.aPosition, 3, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE, vntBuffer);
+			 GLES20.glEnableVertexAttribArray(material.aPosition);			 
 			 
 			 vntBuffer.position(6);// ResourceManager.TEXTURE_OFFSET/4float
-			 GLES20.glVertexAttribPointer(aTextureCoordHolder, 2, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE, vntBuffer);
-		     GLES20.glEnableVertexAttribArray(aTextureCoordHolder);
+			 GLES20.glVertexAttribPointer(material.aTextureCoord, 2, GLES20.GL_FLOAT, false, ResourceManager.VNT_STRIDE, vntBuffer);
+		     GLES20.glEnableVertexAttribArray(material.aTextureCoord);
 			 		
 		     //GLES20.glDrawElements(GLES20.GL_TRIANGLES,indexCount,GLES20.GL_UNSIGNED_SHORT, verticesIndex);
 		     GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,indexCount);

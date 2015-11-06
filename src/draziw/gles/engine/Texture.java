@@ -14,6 +14,7 @@ public class Texture {
 	private int resId;
 	protected int id;
 	private int slot;
+	
 	private int type;
 	private int sizeX,sizeY = 0;	
 	
@@ -36,7 +37,7 @@ public class Texture {
 		this.sizeY=mSizeY;
 	}
 	
-	public void use(int uSamplerHolder) {
+	public void use(int uSampler) {
 		/* Active and Bind texture not needed if you dont replace it or changeþ
 		 we active and bind it in TextureLoader, all your texture in memory and shader can
 		 get in by index from uSampler
@@ -54,7 +55,8 @@ public class Texture {
 		
 		//GLES20.glActiveTexture(this.slot);
 	    //GLES20.glBindTexture(this.type, this.id);
-	    GLES20.glUniform1i(uSamplerHolder,this.slot-GLES20.GL_TEXTURE0);
+		GLES20.glUniform1i(uSampler,this.slot-GLES20.GL_TEXTURE0);
+	    
 	}
 	
 	public void reload(Context mContext,int mTextureId){

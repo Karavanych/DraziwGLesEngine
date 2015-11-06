@@ -3,14 +3,15 @@ package draziw.gles.objects;
 import draziw.gles.engine.GLES20Renderer;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.Texture;
+import draziw.gles.materials.Material;
 
 public class FPSCounter extends Font2D {
 	
 	int frameCount=0;
 	double frameTime=0;
 
-	public FPSCounter(Texture mTexture,ShaderManager shaders) {
-		super(mTexture,shaders.getShader("font"), "0");		
+	public FPSCounter(Texture mTexture,Material material) {
+		super(mTexture,material, "0");		
 	}
 	
 	@Override

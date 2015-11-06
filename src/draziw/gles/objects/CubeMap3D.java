@@ -11,32 +11,21 @@ import android.opengl.Matrix;
 import android.util.Log;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.Texture;
+import draziw.gles.materials.Material;
 
 public class CubeMap3D extends GLESObject {
 	
-	//shader holder
-	private int aPositionHolder;
-	private int aTextureCoordHolder;
-	private int uObjectMatrixHandler;	
-	private int uSamplerHolder;
-
-
-
 	private FloatBuffer vertextBuffer;
 	private FloatBuffer textureCoordBuffer;
-	private FloatBuffer normalBuffer;
 	private ShortBuffer verticesIndex;
 
 	private int indexCount;	
-	
-	
+		
 	//временные
-	float[] mMVMatrix = new float[16];
-	
-	PointLight3D lightObject;
+	float[] mMVMatrix = new float[16];	
 
-	public CubeMap3D(Texture texture,ShaderManager shaders,Context context) {
-		super(texture,shaders.getShader("cubemap"));	
+	public CubeMap3D(Texture texture,Material material,Context context) {
+		super(texture,material);	
 		
 		float[] faces   =  {  1.0f,  1.0f,  1.0f,    -1.0f,  1.0f,  1.0f,    -1.0f, -1.0f,  1.0f,     1.0f, -1.0f,  1.0f,
                 1.0f,  1.0f,  1.0f,     1.0f, -1.0f,  1.0f,     1.0f, -1.0f, -1.0f,     1.0f,  1.0f, -1.0f,
@@ -93,12 +82,12 @@ public class CubeMap3D extends GLESObject {
 		
 	}
 
-	@Override
+/*	@Override
 	public void initializeShaderParam() {
 		aPositionHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aPosition");// получаем указатель для переменной программы aPosition
 		aTextureCoordHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aTextureCoord");		
 		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");		
-		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uSampler");		
+		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uBaseMap");		
 		
 		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uObjectMatrixHandler || -1==uSamplerHolder 
 				  ) {
@@ -109,12 +98,10 @@ public class CubeMap3D extends GLESObject {
 			
 		}
 		
-	}
+	}*/
 	
 	
 	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {		     	                       
-		 
-		
 		 
 		 Matrix.setIdentityM(mMVMatrix,0);		
 		 
@@ -122,21 +109,17 @@ public class CubeMap3D extends GLESObject {
 		 
 		 Matrix.multiplyMM(mObjectMVPMatrix, 0, projectionMatrix, 0, mMVMatrix, 0);
 		 
-		 GLES20.glUniformMatrix4fv(uObjectMatrixHandler, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
+		 GLES20.glUniformMatrix4fv(material.umvp, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
 		 
-		 mTexture.use(uSamplerHolder);
-		 //GLES20.glActiveTexture(mTexture.slot); // активируем текстуру, которой собрались рисовать		 
-		 //GLES20.glBindTexture(GLES20.GL_TEXTURE_CUBE_MAP, mTexture.id); // прикрепляем текстуру, которой собираемся сейчас рисовать		 
-		 //GLES20.glUniform1i(uSamplerHolder, mTexture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему
+		 mTexture.use(material.uBaseMap);
 		 
-		 GLES20.glVertexAttribPointer(aPositionHolder, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
-		 GLES20.glEnableVertexAttribArray(aPositionHolder);			 
+		 GLES20.glVertexAttribPointer(material.aPosition, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
+		 GLES20.glEnableVertexAttribArray(material.aPosition);			 
 		 
-		 GLES20.glVertexAttribPointer(aTextureCoordHolder, 3, GLES20.GL_FLOAT, false, 0, textureCoordBuffer);
-	     GLES20.glEnableVertexAttribArray(aTextureCoordHolder);
+		 GLES20.glVertexAttribPointer(material.aTextureCoord, 3, GLES20.GL_FLOAT, false, 0, textureCoordBuffer);
+	     GLES20.glEnableVertexAttribArray(material.aTextureCoord);
 		 		
-	     GLES20.glDrawElements(GLES20.GL_TRIANGLES,indexCount,GLES20.GL_UNSIGNED_SHORT, verticesIndex);
-	    // GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,indexCount);
+	     GLES20.glDrawElements(GLES20.GL_TRIANGLES,indexCount,GLES20.GL_UNSIGNED_SHORT, verticesIndex);	    
 		
 	}
 

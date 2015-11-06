@@ -22,9 +22,11 @@ import android.util.Log;
 public class ResourceManager {
 		
 	
-	public static int VNT_STRIDE=32;// 8*4
+	public static int VNT_STRIDE=56;// 14*4
 	public static int NORMAL_OFFSET=12;
-	public static int TEXTURE_OFFSET=24;
+	public static int TEXTURE_OFFSET=NORMAL_OFFSET+12;
+	public static int TANGENT_OFFSET=TEXTURE_OFFSET+8;
+	public static int BITANGENT_OFFSET=TANGENT_OFFSET+12;
 	
 	//private ArrayList<Texture> textures;
 	private HashMap<String, int[]> bufferIndex=new HashMap<String, int[]>();

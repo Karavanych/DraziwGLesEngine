@@ -2,22 +2,29 @@ attribute vec4 aPosition;
 attribute vec2 aTextureCoord;
 attribute vec3 aNormal;
 
+attribute vec3 aTangent;
+attribute vec3 aBinormal;
+
 varying vec2 vTextureCoord;
 varying vec3 vPosition;
 varying vec3 vNormal;
+varying mat3 vTangentMat;
 
 uniform mat4 m,v, mvp; // model, view matrix 
 
 void main() {
 
-	vPosition = vec3(v*m * aPosition);
-	vTextureCoord = aTextureCoord;
+	vPosition = vec3(v*m * aPosition);		
+	
+	vTextureCoord = aTextureCoord;		
 	
 	// this will not work if object was rotate :(
 	// need add v*rotationMatrix
 	vNormal = vec3(v * vec4(aNormal, 0.0));
 	
 	gl_Position = mvp * aPosition;
+		
+	vTangentMat = mat3(aTangent, aBinormal, aNormal);
 	
 	}
 
@@ -30,15 +37,16 @@ uniform float uLuminance;
 
 varying vec3 vPosition;
 varying vec2 vTextureCoord;
-varying vec3 vNormal;
+varying mat3 vTangentMat;
 
 uniform sampler2D uBaseMap;
+uniform sampler2D uNormalMap;
 
 void main() {
-
+ 	vec3 normal = texture2D(uNormalMap,vTextureCoord).xyz;
 	float distance = length(uLightPos - vPosition);
-	vec3 lightVector = normalize(uLightPos - vPosition);
-	float diffuse = max(dot(vNormal, lightVector), 0.1);
+	vec3 lightVector = normalize((uLightPos - vPosition)*vTangentMat);
+	float diffuse = max(dot(normal, lightVector), 0.1);
 	diffuse = diffuse * (1.0 / (1.0 + (uLuminance * distance * distance)));
 	gl_FragColor = texture2D(uBaseMap,vTextureCoord);
 	gl_FragColor.rbg *= diffuse;

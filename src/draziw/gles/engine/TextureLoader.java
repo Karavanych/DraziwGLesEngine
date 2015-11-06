@@ -21,7 +21,7 @@ public class TextureLoader {
 		
 			if (textures.size()>0) textures.clear();
 		
-			int[] texturesId = new int[2];
+			int[] texturesId = new int[3];
 		
 			GLES20.glGenTextures(texturesId.length, texturesId, 0);					
 			
@@ -39,7 +39,15 @@ public class TextureLoader {
 			mTexture = 			new Texture(GLES20.GL_TEXTURE_2D,
 										texturesId[1],
 										GLES20.GL_TEXTURE1,
-										R.drawable.texture1);
+										R.drawable.basetexture1);
+			mTexture.load(context);
+			textures.add(mTexture);
+			
+	        // 3я текстура	 
+			mTexture = 			new Texture(GLES20.GL_TEXTURE_2D,
+										texturesId[2],
+										GLES20.GL_TEXTURE2,
+										R.drawable.texturegui);
 			mTexture.load(context);
 			textures.add(mTexture);
 	        

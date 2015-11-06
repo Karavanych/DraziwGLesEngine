@@ -5,94 +5,20 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
+import draziw.gles.materials.Material;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.util.Log;
 
 public class Plane3D extends GLESObject {
-	
-	//public static ShaderProgram sShaderProgram;
-	
-	/*public static final String VERTEX_SHADER_CODE = 
-			  "attribute vec4 aPosition;         		   \n" // объявляем входящие данные
-			 + "attribute vec2 aTextureCoord;	         		   \n" // объявляем входящие данные
-			 + "varying vec2 vTextureCoord;             		   \n" // для передачи во фрагментный шейдер
-			 + "uniform vec2 uAnimVector;       		   \n" // вектор на который сдвигаем текстуру			 
-			 + "uniform float uFrame;      		   \n" //номер кадра
-			 + "uniform mat4 uObjectMatrix;			\n"
-			 + "void main() {                    		   \n"
-			 //+	" gl_PointSize = 15.0;					\n"
-			 +	" gl_Position = uObjectMatrix*aPosition;	\n"			
-			 + " vTextureCoord = aTextureCoord+(uAnimVector*uFrame);     \n" 					
-		+	"}"	;
-		
-	
-	public static final String FRAGMENT_SHADER_CODE = 
-			"precision highp float;"
-+			"varying vec2 vTextureCoord;                        \n" +
-			"uniform sampler2D uSampler;                 \n"
-		+	"void main() {							\n"
-		+	" gl_FragColor = texture2D(uSampler,vTextureCoord);	\n"
-		+	"}"	;*/
 	
 	FloatBuffer vertextBuffer;
 	FloatBuffer textureCoordBuffer;
 	ShortBuffer verticesIndex;
-	
-	//shader holder
-	int aPositionHolder;
-	int aTextureCoordHolder;
-	int uSamplerHolder;
-	int uAnimVectorHolder;
-	int uFrameHolder;
-	int uObjectMatrixHandler;
-	
-	
-	// for animation
-	private int tekFrame=0;
-	private int startFrame=0;
-	private int countFrames=0;
-	public float[] animationVector=new float[]{0f,0f};
-	
-	@Override
-	public void initializeShaderParam() {
 		
-		aPositionHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aPosition");// получаем указатель для переменной программы aPosition
-		aTextureCoordHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aTextureCoord");
-		uSamplerHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uSampler");
-		uAnimVectorHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uAnimVector");
-		uFrameHolder = GLES20.glGetUniformLocation(shaderProgramHandler, "uFrame");
-		uObjectMatrixHandler=GLES20.glGetUniformLocation(shaderProgramHandler, "uObjectMatrix");
-		
-		if (-1==aPositionHolder || -1==aTextureCoordHolder || -1==uSamplerHolder || -1==uAnimVectorHolder || -1==uFrameHolder || -1==uObjectMatrixHandler) {
-			Log.e("MyLogs", "Shader atributs or uniforms not found.");
-			Log.e("MyLogs",""+aPositionHolder+","+aTextureCoordHolder+","+uSamplerHolder+","+uAnimVectorHolder+","+uFrameHolder+","+uObjectMatrixHandler);
-		}
-		else { 
-			
-		}
-	}
-	
-	// planeVector - from 0,0 to float[3] vector - plane // 2,2,0
-	public Plane3D(Texture mTexture,ShaderProgram shader,float[] planeVector,boolean ccw) {
-		 super(mTexture,shader);
-						
-		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
-		/*float[] pointVFA = {
-				 1f,-1f,0.0f,
-				 -1f,-1f,0.0f,
-				 1f,1f,0.0f,
-				-1f,1f,0.0f
-				};*/
-		 /* 2,0,0
-		  * 0,0,0
-		  * 2,2,0
-		  * 0,2,0
-		  */
-		 
+	public Plane3D(Texture mTexture,Material material,float[] planeVector,boolean ccw) {
+		 super(mTexture,material);						
 		 
 		 float[] pointVFA = {
 				 planeVector[0],0.0f,0.0f,
@@ -200,46 +126,29 @@ public class Plane3D extends GLESObject {
 	
 	@Override
 	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {
-		if (isAnimated()) animationFrameUpdate(timer);// update frame, if is animated Sprite
 		
 		 Matrix.multiplyMM(mObjectMVPMatrix, 0, viewMatrix, 0, mObjectMatrix, 0);
 		 Matrix.multiplyMM(mObjectMVPMatrix, 0, projectionMatrix, 0, mObjectMVPMatrix, 0);
 		 		 
-		 GLES20.glUniformMatrix4fv(uObjectMatrixHandler, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
+		 GLES20.glUniformMatrix4fv(material.umvp, 1, false, mObjectMVPMatrix, 0);//передаем кумулятивную матрицы MVP в шейдер
 		
-		 mTexture.use(uSamplerHolder);		
+		 mTexture.use(material.uBaseMap);		
 		 //GLES20.glActiveTexture(GLES20.GL_TEXTURE0+mTexture.index); // активируем текстуру, которой собрались рисовать		 
 		 //GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture.id); // прикрепляем текстуру, которой собираемся сейчас рисовать		 
 		 //GLES20.glUniform1i(uSamplerHolder, mTexture.index);//передаем индекс текстуры в шейдер... index текстуры и id текстуры различаются, я хз пока почему
 		 
-		 GLES20.glUniform2f(uAnimVectorHolder,animationVector[0],animationVector[1]);// вектор сдвига анимации в текстурных координатах {1/6,0} где 6 - число кадров в спрайте		 
-		 GLES20.glUniform1f(uFrameHolder,tekFrame);// - номер кадра
+		 //GLES20.glUniform2f(uAnimVectorHolder,animationVector[0],animationVector[1]);// вектор сдвига анимации в текстурных координатах {1/6,0} где 6 - число кадров в спрайте		 
+		 //GLES20.glUniform1f(uFrameHolder,tekFrame);// - номер кадра
 		 
 		 
-		 GLES20.glVertexAttribPointer(aPositionHolder, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
-		 GLES20.glEnableVertexAttribArray(aPositionHolder);	
+		 GLES20.glVertexAttribPointer(material.aPosition, 3, GLES20.GL_FLOAT, false, 0, vertextBuffer);
+		 GLES20.glEnableVertexAttribArray(material.aPosition);	
 		 
-		 GLES20.glVertexAttribPointer(aTextureCoordHolder, 2, GLES20.GL_FLOAT, false, 8, textureCoordBuffer);
-	     GLES20.glEnableVertexAttribArray(aTextureCoordHolder);
+		 GLES20.glVertexAttribPointer(material.aTextureCoord, 2, GLES20.GL_FLOAT, false, 8, textureCoordBuffer);
+	     GLES20.glEnableVertexAttribArray(material.aTextureCoord);
 		 		
 	     GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, verticesIndex);
 		
-	}
-
-
-	public void animationFrameUpdate(double ctime) {		  		   
-	        if(ctime < 0){ctime++;}
-	        tekFrame=startFrame+(int)(ctime*(countFrames));	                	                 	  	
-	}
-	
-	public void setAnimation(int mStartFrame,int mCountFrames,float[] mAnimVector) {
-		startFrame=mStartFrame;
-		countFrames=mCountFrames;
-		animationVector=mAnimVector;					
-	}
-	
-	public boolean isAnimated() {
-		if (countFrames>0) return true; else return false;
 	}
 	
 }

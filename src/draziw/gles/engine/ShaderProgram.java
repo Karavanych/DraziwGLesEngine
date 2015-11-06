@@ -13,14 +13,16 @@ import android.util.Log;
 public class ShaderProgram {
 	
 	public int programHandler;
+	public String name;
 	
 	
 	public ShaderProgram(String name,Context context) {
+			this.name=name;
 
 			// load from file resource
 			String shaderStr="";			
 	        Resources res = context.getResources();
-	        String packageName = context.getApplicationContext().getPackageName();
+	        String packageName = context.getApplicationContext().getPackageName();	        
 	        //+ ":raw/" + name;
 	        int res_id = res.getIdentifier(packageName+":raw/" + name, null, packageName);
 	        //Log.d("MyLogs", fileName);

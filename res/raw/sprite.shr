@@ -5,11 +5,11 @@ varying vec2 vTextureCoord;
 
 uniform vec2 uAnimVector;
 uniform float uFrame;
-uniform mat4 uObjectMatrix;
+uniform mat4 mvp;
 
 void main() {
 
-	gl_Position = uObjectMatrix*aPosition;
+	gl_Position = mvp*aPosition;
 	vTextureCoord = aTextureCoord+(uAnimVector*uFrame);
 	
 }
@@ -20,10 +20,10 @@ precision mediump float;
 
 varying vec2 vTextureCoord;
 
-uniform sampler2D uSampler;
+uniform sampler2D uBaseMap;
 
 void main() {
 
-	gl_FragColor = texture2D(uSampler,vTextureCoord);
+	gl_FragColor = texture2D(uBaseMap,vTextureCoord);
 	
 	}

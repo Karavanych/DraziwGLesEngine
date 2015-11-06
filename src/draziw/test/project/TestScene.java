@@ -26,6 +26,8 @@ import draziw.gles.game.GLESCamera;
 import draziw.gles.game.GameControllers;
 import draziw.gles.game.GameScene;
 import draziw.gles.game.ResourceManager;
+import draziw.gles.materials.MaterialCubeMap;
+import draziw.gles.materials.MaterialPoint;
 import draziw.gles.objects.CubeMap3D;
 import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.PointLight3D;
@@ -67,13 +69,14 @@ public class TestScene extends GameScene {
 		Bullet.init();
 		
 		//создаем элементы из записанной сцены и загружаем ресурсы
+		MaterialCubeMap materialCM=new MaterialCubeMap(shaders);
+		MaterialPoint materialPL=new MaterialPoint(shaders);
 		
-		
-		cubeMap = new CubeMap3D(textureLoader.getTexture(0),shaders,context);
+		cubeMap = new CubeMap3D(textureLoader.getTexture(0),materialCM,context);
 		cubeMap.scaleM(15f, 15f, 15f);
 		sceneLayer.add(cubeMap);
 		
-		glPointLight = new PointLight3D(textureLoader.getTexture(0),shaders);
+		glPointLight = new PointLight3D(textureLoader.getTexture(0),materialPL);
 		glPointLight.translateM(0.0f,0.0f,15f);	
 		glPointLight.setLuminance(0.001f);
 		

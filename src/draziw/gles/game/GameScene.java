@@ -15,6 +15,9 @@ import draziw.gles.animation.AnimationActor;
 import draziw.gles.animation.AnimationActor.AnimationActorListener;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.TextureLoader;
+import draziw.gles.materials.Material;
+import draziw.gles.materials.MaterialPixelLight;
+import draziw.gles.materials.MaterialSimpleTexture;
 import draziw.gles.objects.ControllerView;
 import draziw.gles.objects.Cube3D;
 import draziw.gles.objects.Custom3D;
@@ -24,7 +27,6 @@ import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.Plane3D;
 import draziw.gles.objects.Player;
 import draziw.gles.objects.PointLight3D;
-import draziw.gles.objects.Rectangle2D;
 import draziw.gles.objects.Sprite2D;
 
 public abstract class GameScene implements AnimationActorListener {
@@ -84,16 +86,18 @@ public abstract class GameScene implements AnimationActorListener {
 	}
 	
 	private void placeControllers(GameControllers gameController,
-			ArrayList<GLESObject> sceneLayer) {				
+			ArrayList<GLESObject> sceneLayer) {	
+		
+			Material materialSimpleTex=new MaterialSimpleTexture(shaders);	
 			
-			ControllerView tekElement = new ControllerView(textureLoader.getTexture(1),shaders.getShader("simple_texture"),context,"controller1");
+			ControllerView tekElement = new ControllerView(textureLoader.getTexture(2),materialSimpleTex,context,"controller1");
 			
 			//нельзя делать scale, потому что порядок - transtale, rotate,scale
 			//tekElement.scale(.05f, 0.05f, 1f);
 			tekElement.setController(gameController.getControllerByType(GameControllers.CONTROLLER_LEFT));			
 			sceneLayer.add(tekElement);		
 			
-			tekElement = new ControllerView(textureLoader.getTexture(1),shaders.getShader("simple_texture"),context,"controller1");			
+			tekElement = new ControllerView(textureLoader.getTexture(2),materialSimpleTex,context,"controller1");			
 			tekElement.setController(gameController.getControllerByType(GameControllers.CONTROLLER_RIGHT));						
 			sceneLayer.add(tekElement);				
 				
@@ -104,13 +108,17 @@ public abstract class GameScene implements AnimationActorListener {
 		for (int pos=0;pos<sceneElements.size();pos++) {
 			//for (int pos=13;pos<14;pos++) {
 				Custom3D tekElement;
+				
+				MaterialPixelLight materialPixelLight=new MaterialPixelLight(shaders);
+				materialPixelLight.setLight(glPointLight);
+				
 				if (sceneElements.getName(pos).equals("player")) {
 					if (player==null) { // если он уже есть не надо создавать
-						player = new Player(textureLoader.getTexture(1),shaders.getShader("pixel_light"),resources,sceneElements.getName(pos));						
+						player = new Player(textureLoader.getTexture(1),materialPixelLight,resources,sceneElements.getName(pos));						
 					} 
 					tekElement=player;
 				} else {
-					tekElement = new Custom3D(textureLoader.getTexture(1),shaders.getShader("pixel_light"),resources,sceneElements.getName(pos));
+					tekElement = new Custom3D(textureLoader.getTexture(1),materialPixelLight,resources,sceneElements.getName(pos));
 				}
 				
 				tekElement.setPositionM(sceneElements.getX(pos), sceneElements.getY(pos), sceneElements.getZ(pos));
@@ -125,8 +133,7 @@ public abstract class GameScene implements AnimationActorListener {
 				if (sceneElements.getRotateZ(pos)!=0) {
 					tekElement.rotateM(sceneElements.getRotateZ(pos), 0, 0, 1);
 				}					
-
-				tekElement.setLight(glPointLight);
+				
 				sceneLayer.add(tekElement);			
 			}		
 	}
@@ -147,11 +154,13 @@ public abstract class GameScene implements AnimationActorListener {
 	public float[] defaultDraw(float timer) {
 		float[] viewMatrix = camera.getViewMatrix();
 		
-		int currentProgramHandler = 0;
+		Material currentMaterial=null;
 		for (GLESObject tekObject:sceneLayer) {
-			if (currentProgramHandler!=tekObject.shaderProgramHandler) {
-				currentProgramHandler=tekObject.shaderProgramHandler;
-				GLES20.glUseProgram(currentProgramHandler);	
+			if (currentMaterial!=tekObject.material) {
+				currentMaterial=tekObject.material;
+				GLES20.glUseProgram(currentMaterial.shaderProgramHandler);
+				// пока будем передавать матрицу проекции
+				currentMaterial.applyMaterialParams(viewMatrix, camera.getProjectionMatrix());					
 			}
 			if (tekObject.isGUI()) {
 				tekObject.draw(camera.getGUIView(),camera.getGUIMatrix(),timer);

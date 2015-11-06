@@ -3,10 +3,10 @@ attribute vec3 aTextureCoord;
 
 varying vec3 vTextureCoord;
 
-uniform mat4 uObjectMatrix;
+uniform mat4 mvp;
 
 void main() {
-	gl_Position = uObjectMatrix*aPosition;
+	gl_Position = mvp*aPosition;
 	vTextureCoord = aTextureCoord;
 }
 
@@ -16,10 +16,10 @@ precision mediump float;
 
 varying vec3 vTextureCoord;
 
-uniform samplerCube uSampler;
+uniform samplerCube uBaseMap;
 
 void main() {
 
-	gl_FragColor = textureCube(uSampler,vTextureCoord);
+	gl_FragColor = textureCube(uBaseMap,vTextureCoord);
 	
 }

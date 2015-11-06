@@ -10,6 +10,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
+import draziw.gles.materials.Material;
 
 public class Cube3D extends GLESObject {
 
@@ -30,8 +31,8 @@ public class Cube3D extends GLESObject {
 	private int indexCount;
 	
 
-	public Cube3D(Texture texture,ShaderProgram shader) {
-		super(texture,shader);
+	public Cube3D(Texture texture,Material material) {
+		super(texture,material);
 		
 		// по умолчанию координаты на весь экран, нужно будет реализовать сдвиг и скалирование
 		float[] pointVFA = {
@@ -100,7 +101,7 @@ public class Cube3D extends GLESObject {
 		
 	}
 
-	@Override
+	/*@Override
 	public void initializeShaderParam() {
 		aPositionHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aPosition");// получаем указатель для переменной программы aPosition
 		aColorHolder = GLES20.glGetAttribLocation(shaderProgramHandler, "aColor");		
@@ -114,7 +115,7 @@ public class Cube3D extends GLESObject {
 			
 		}
 		
-	}
+	}*/
 
 	@Override
 	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {

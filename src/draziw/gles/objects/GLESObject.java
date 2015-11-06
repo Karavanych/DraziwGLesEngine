@@ -1,13 +1,15 @@
 package draziw.gles.objects;
 
-import draziw.gles.engine.MyMatrix;
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
+import draziw.gles.materials.Material;
+import draziw.gles.math.MyMatrix;
 import android.opengl.Matrix;
 
 public abstract class GLESObject {
 					
 	public Texture mTexture;
+	public Material material;
 	
 	public float[] mObjectMatrix = new float[16];
 	public float[] mObjectMVPMatrix = new float[16];
@@ -15,18 +17,15 @@ public abstract class GLESObject {
 	public float[] position = new float[3];
 	public float[] geometry=new float[3];
 
-	public int shaderProgramHandler;	
-	
 	public boolean isAnimated=false;
 	
-	public abstract void initializeShaderParam();
+	//public abstract void initializeShaderParam();
 	public abstract void draw(float[] viewMatrix, float[] projectionMatrix, float timer); // timer для анимации кадров	
 	
-	public GLESObject(Texture texture,ShaderProgram shader) {
-		shaderProgramHandler = shader.programHandler;
+	public GLESObject(Texture texture,Material material) {
+		this.material = material;
 		this.mTexture=texture;
-		Matrix.setIdentityM(mObjectMatrix,0);
-		this.initializeShaderParam();
+		Matrix.setIdentityM(mObjectMatrix,0);		
 	}
 	
 	

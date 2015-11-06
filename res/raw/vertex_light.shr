@@ -7,16 +7,16 @@ varying float vDiffuse;
 
 uniform float uLuminance;
 uniform vec3 uLightPos;
-uniform mat4 uObjectMatrix;
-uniform mat4 uMVMatrix;
+
+uniform mat4 m,v, mvp; // model, view matrix 
 
 void main() {
 
 	// Трансформируем вертексы в позицию вида
-	vec3 modelViewVertex = vec3(uMVMatrix * aPosition);
+	vec3 modelViewVertex = vec3(v*m * aPosition);
 	
-	// Трансформируем нормали в позицию вида
-	vec3 modelViewNormal = vec3(uMVMatrix * vec4(aNormal, 0.0)); 
+	// Трансформируем нормали в позицию вида, не будет работать если объект повернуть, нужна матрица поворота
+	vec3 modelViewNormal = vec3(v * vec4(aNormal, 0.0)); 
 	
 	// Расчитываем дисстанцию для затухания освещения
 	float distance = length(uLightPos - modelViewVertex);
@@ -30,18 +30,19 @@ void main() {
    	
    	// Рассчитаем угасание в зависимости от дистанции
    	vDiffuse = diffuse * (1.0 / (0.9 + (uLuminance * distance * distance)));
-   	gl_Position = uObjectMatrix*aPosition;
+   	gl_Position = mvp*aPosition;
    	vTextureCoord = aTextureCoord;
    	
  }
-   	
+   		
 [FRAGMENT]
+
 precision highp float;
 varying vec2 vTextureCoord;
 varying float vDiffuse;
-uniform sampler2D uSampler;
+uniform sampler2D uBaseMap;
 void main() {
 
-	gl_FragColor = texture2D(uSampler,vTextureCoord)*vDiffuse;
+	gl_FragColor = texture2D(uBaseMap,vTextureCoord)*vDiffuse;
 	
 }
