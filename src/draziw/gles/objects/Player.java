@@ -9,12 +9,14 @@ import draziw.gles.game.ResourceManager;
 import draziw.gles.game.GameControllers.Controller;
 import draziw.gles.materials.Material;
 import draziw.gles.math.MyMatrix;
+import draziw.gles.math.Quaternion;
 import draziw.simple.physics.Collision;
 import draziw.gles.engine.ShaderProgram;
 
 public class Player extends Custom3D {
 	
 	public Collision collision;
+	Quaternion quaternion;
 	
 	public float[] mRotationMatrix = new float[16];
 	private Matrix4 gdxTransform=new Matrix4();	
@@ -54,6 +56,8 @@ public class Player extends Custom3D {
 		*/				
 		
 		Matrix.setIdentityM(mRotationMatrix, 0);
+		quaternion=new Quaternion();
+		quaternion.setFromMatrix(mRotationMatrix);
 		//Matrix.setIdentityM(mTranslationMatrix, 0);
 		
 	}

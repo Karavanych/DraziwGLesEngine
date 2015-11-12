@@ -2,6 +2,24 @@ package draziw.gles.math;
 
 public class MyMatrix {
 	
+	public static final int M00 = 0;
+	public static final int M01 = 4;
+	public static final int M02 = 8;
+	public static final int M03 = 12;
+	public static final int M10 = 1;
+	public static final int M11 = 5;
+	public static final int M12 = 9;
+	public static final int M13 = 13;
+	public static final int M20 = 2;
+	public static final int M21 = 6;
+	public static final int M22 = 10;	
+	public static final int M23 = 14;	
+	public static final int M30 = 3;	
+	public static final int M31 = 7;	
+	public static final int M32 = 11;	
+	public static final int M33 = 15;
+	
+	
 	public static void matrix2dScale(float[] mTFA,float[] mAVector) { // умножает float[] 2x2 матрицу на float[] 2d вектор		
 		for (int each=0;each<mTFA.length;each+=2) {			
 			mTFA[each]*=mAVector[0];				
@@ -118,5 +136,7 @@ public class MyMatrix {
 				a[0]*b[1]-a[1]*b[0]
 		};
 	}
+	
+
 	
 }

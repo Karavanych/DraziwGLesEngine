@@ -1,26 +1,25 @@
 package draziw.gles.materials;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.PointLight3D;
 
-public class MaterialNormalMap extends Material {
+public class MaterialNormalMapOld extends Material {
 
 	public int uLightPos;
+	public int uLuminance;
 		
 	private PointLight3D glPointLight;
+	private float mLuminance;
+	
+	private int uvi;
+	
+	private float[] mViewInverse = new float[16];
 
-	private int uKa;
-	private int uKs;
-	private int uShininess;
-	private int uLightIntensity;
-
-	private float[] materialsParams; // ambientRED,aG,aB,specularRED,sG,sB
-	private float[] lightParams;// light Intensity RED, iG,iB, Shininess 
-
-	public MaterialNormalMap(ShaderManager shaders) {
-		super(shaders, "normapmappong");		
+	public MaterialNormalMapOld(ShaderManager shaders) {
+		super(shaders, "basenormal");		
 	}
 
 	@Override
@@ -40,36 +39,25 @@ public class MaterialNormalMap extends Material {
 		
 		uBaseMap = glGetUniformLocation(shaderProgramHandler, "uBaseMap");
 		uNormalMap = glGetUniformLocation(shaderProgramHandler,"uNormalMap");
-		uLightPos = glGetUniformLocation(shaderProgramHandler, "uLightPos");		
-		
-		uKa = glGetUniformLocation(shaderProgramHandler,"uKa");
-		uKs = glGetUniformLocation(shaderProgramHandler,"uKs");; //specular
-		uShininess = glGetUniformLocation(shaderProgramHandler,"uShininess");
-		uLightIntensity = glGetUniformLocation(shaderProgramHandler,"uLightIntensity");
-	}
-	
-	public void setMaterialParams(float aR,float aG,float aB,float sR,float sG,float sB) {
-		materialsParams=new float[] {aR,aG,aB,sR,sG,sB};
-	}
-	
-	public void setLightParams(float iR,float iG,float iB,float shininess) {
-		lightParams=new float[] {iR,iG,iB,shininess};		
+		uLightPos = glGetUniformLocation(shaderProgramHandler, "uLightPos");
+		uLuminance = glGetUniformLocation(shaderProgramHandler, "uLuminance");		
 	}
 
 	public void setLight(PointLight3D glPointLight) {
-		this.glPointLight=glPointLight;				
+		this.glPointLight=glPointLight;		
+		this.mLuminance=glPointLight.getLuminance();
 	}	
+	
+	public void setLuminance(float luminance) {
+		this.mLuminance=luminance;
+	}
 
 	@Override
 	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix) {
 		float[] lightPos = glPointLight.getMVPosition(viewMatrix); 
 		
 		GLES20.glUniform3f(uLightPos, lightPos[0], lightPos[1], lightPos[2]);
-		GLES20.glUniform3f(uKa, materialsParams[0], materialsParams[1], materialsParams[2]);
-		GLES20.glUniform3f(uKs, materialsParams[3], materialsParams[4], materialsParams[5]);
-		
-		GLES20.glUniform3f(uLightIntensity, lightParams[0], lightParams[1], lightParams[2]);
-		GLES20.glUniform1f(uShininess, lightParams[3]);
+		GLES20.glUniform1f(uLuminance,mLuminance);
 		
 		GLES20.glUniformMatrix4fv(uv, 1, false, viewMatrix, 0);//передаем матрицу V в шейдер
 		

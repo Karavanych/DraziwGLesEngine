@@ -8,6 +8,8 @@ varying vec3 vNormal;
 
 uniform mat4 m,v, mvp; // model, view matrix 
 
+uniform mat3 uNormalMatrix;
+
 void main() {
 
 	vPosition = vec3(v*m * aPosition);
@@ -15,7 +17,7 @@ void main() {
 	
 	// this will not work if object was rotate :(
 	// need add v*rotationMatrix
-	vNormal = vec3(v * vec4(aNormal, 0.0));
+	vNormal = normalize(uNormalMatrix * aNormal);
 	
 	gl_Position = mvp * aPosition;
 	

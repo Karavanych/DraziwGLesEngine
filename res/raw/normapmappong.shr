@@ -1,0 +1,76 @@
+	attribute vec4 aPosition;
+	attribute vec2 aTextureCoord;
+	attribute vec3 aNormal;
+	
+	attribute vec3 aTangent;
+	attribute vec3 aBinormal;
+	
+	varying vec2 vTextureCoord;
+	varying vec3 vLightVector;
+	varying vec3 vViewDir;
+	
+	uniform mat4 m,v, mvp; // model, view matrix
+	
+	uniform mat3 uNormalMatrix;
+	
+	uniform vec3 uLightPos;
+	
+	void main() {
+	
+		vec3 mPosition = vec3(v*m * aPosition);		
+		
+		vTextureCoord = aTextureCoord;		
+			
+		gl_Position = mvp * aPosition;
+		
+		vec3 norm = normalize(uNormalMatrix*aNormal);
+		vec3 tang = normalize(uNormalMatrix*aTangent); 
+		vec3 bino = normalize(uNormalMatrix*aBinormal);	
+			
+		mat3 vTangentMat = mat3(
+        tang.x, bino.x, norm.x,
+        tang.y, bino.y, norm.y,
+        tang.z, bino.z, norm.z ) ;
+		
+		vLightVector = normalize(vTangentMat*(uLightPos - mPosition));
+		vViewDir = vTangentMat * normalize(-mPosition);
+		
+		}
+
+[FRAGMENT]
+
+	precision mediump float;
+
+	varying vec2 vTextureCoord;
+	varying vec3 vLightVector;
+	varying vec3 vViewDir;
+	
+	uniform sampler2D uBaseMap;
+	uniform sampler2D uNormalMap;
+	
+	uniform vec3 uKa; //ambient
+	uniform vec3 uKs; //specular
+	uniform float uShininess;
+	uniform vec3 uLightIntensity; // a,d,s ambient,diffuse,specular
+	
+	vec3 phongModel( vec3 norm, vec3 diffR ) {
+	    vec3 r = reflect( -vLightVector, norm );
+	    vec3 ambient = uLightIntensity * uKa;
+	    float sDotN = max( dot(vLightVector, norm), 0.0 );
+	    vec3 diffuse = uLightIntensity * diffR * sDotN;
+	
+	    vec3 spec = vec3(0.0);
+	    if( sDotN > 0.0 )
+	        spec = uLightIntensity * uKs *
+	               pow( max( dot(r,vViewDir), 0.0 ), uShininess );
+	
+	    return ambient + diffuse + spec;
+	}
+	
+	void main() {
+	 	vec4 normal = 2.0 * texture2D( uNormalMap, vTextureCoord ) - 1.0;				
+		vec4 texColor = texture2D(uBaseMap,vTextureCoord);	
+		
+		gl_FragColor = vec4( phongModel(normal.xyz, texColor.rgb), 1.0 );
+		
+		}
