@@ -268,6 +268,11 @@ public class Quaternion {
 		this.w = newW;
 		return this;
 	}
+	
+	public Quaternion mulLeft (float[] axis,float radians) {
+		tmp1.setFromAxisRad(axis, radians);
+		return mulLeft(tmp1);
+	}
 
 	/** Multiplies this quaternion with another one in the form of this = other * this
 	 * 

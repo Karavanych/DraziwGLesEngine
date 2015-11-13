@@ -117,16 +117,18 @@ public class MyMatrix {
 		vec3[2] += z;
 	}
 	
-	public static void normalize(float[] vec3) {
+	public static float normalize(float[] vec3) {
 		/*final float len2 = this.len2();
 		if (len2 == 0f || len2 == 1f) return this;
 		return this.scl(1f / (float)Math.sqrt(len2));*/
 		final float len2=vec3[0]*vec3[0]+vec3[1]*vec3[1]+vec3[2]*vec3[2];
-		if (len2 == 0f || len2 == 1f) return;
-		final float oneDivLen1=1f/(float)Math.sqrt(len2);
+		if (len2 == 0f || len2 == 1f) return 0f;
+		final float len1 = (float)Math.sqrt(len2);
+		final float oneDivLen1=1f/len1;
 		vec3[0]*=oneDivLen1;
 		vec3[1]*=oneDivLen1;
 		vec3[2]*=oneDivLen1;	
+		return len1;
 	}
 	
 	public static float[] cross(float[] a,float[] b) {		
@@ -137,6 +139,67 @@ public class MyMatrix {
 		};
 	}
 	
+	public static float[] cross(float a0,float a1,float a2,float b0,float b1,float b2) {		
+		return new float[]{
+				a1*b2-a2*b1,
+				a2*b0-a0*b2,
+				a0*b1-a1*b0
+		};
+	}
+	
+	public static void setFromQuaternion (float[] matrix4,float translationX, float translationY, float translationZ, Quaternion quaternion) {
+		final float xs = quaternion.x * 2f, ys = quaternion.y * 2f, zs = quaternion.z * 2f;
+		final float wx = quaternion.w * xs, wy = quaternion.w * ys, wz = quaternion.w * zs;
+		final float xx = quaternion.x * xs, xy = quaternion.x * ys, xz = quaternion.x * zs;
+		final float yy = quaternion.y * ys, yz = quaternion.y * zs, zz = quaternion.z * zs;
+
+		matrix4[M00] = (1.0f - (yy + zz));
+		matrix4[M01] = (xy - wz);
+		matrix4[M02] = (xz + wy);
+		matrix4[M03] = translationX;
+
+		matrix4[M10] = (xy + wz);
+		matrix4[M11] = (1.0f - (xx + zz));
+		matrix4[M12] = (yz - wx);
+		matrix4[M13] = translationY;
+
+		matrix4[M20] = (xz - wy);
+		matrix4[M21] = (yz + wx);
+		matrix4[M22] = (1.0f - (xx + yy));
+		matrix4[M23] = translationZ;
+
+		matrix4[M30] = 0.f;
+		matrix4[M31] = 0.f;
+		matrix4[M32] = 0.f;
+		matrix4[M33] = 1.0f;			
+	}
+
+	public void setFromQuaternion (float[] matrix4,float translationX, float translationY, float translationZ,Quaternion quaternion, float scaleX, float scaleY, float scaleZ) {
+			final float xs = quaternion.x * 2f, ys = quaternion.y * 2f, zs = quaternion.z * 2f;
+			final float wx = quaternion.w * xs, wy = quaternion.w * ys, wz = quaternion.w * zs;
+			final float xx = quaternion.x * xs, xy = quaternion.x * ys, xz = quaternion.x * zs;
+			final float yy = quaternion.y * ys, yz = quaternion.y * zs, zz = quaternion.z * zs;
+	
+			matrix4[M00] = scaleX * (1.0f - (yy + zz));
+			matrix4[M01] = scaleY * (xy - wz);
+			matrix4[M02] = scaleZ * (xz + wy);
+			matrix4[M03] = translationX;
+	
+			matrix4[M10] = scaleX * (xy + wz);
+			matrix4[M11] = scaleY * (1.0f - (xx + zz));
+			matrix4[M12] = scaleZ * (yz - wx);
+			matrix4[M13] = translationY;
+	
+			matrix4[M20] = scaleX * (xz - wy);
+			matrix4[M21] = scaleY * (yz + wx);
+			matrix4[M22] = scaleZ * (1.0f - (xx + yy));
+			matrix4[M23] = translationZ;
+	
+			matrix4[M30] = 0.f;
+			matrix4[M31] = 0.f;
+			matrix4[M32] = 0.f;
+			matrix4[M33] = 1.0f;			
+		}
 
 	
 }

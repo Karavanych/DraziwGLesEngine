@@ -15,8 +15,7 @@ import draziw.gles.engine.ShaderProgram;
 
 public class Player extends Custom3D {
 	
-	public Collision collision;
-	Quaternion quaternion;
+	public Collision collision;	
 	
 	public float[] mRotationMatrix = new float[16];
 	private Matrix4 gdxTransform=new Matrix4();	
@@ -56,8 +55,6 @@ public class Player extends Custom3D {
 		*/				
 		
 		Matrix.setIdentityM(mRotationMatrix, 0);
-		quaternion=new Quaternion();
-		quaternion.setFromMatrix(mRotationMatrix);
 		//Matrix.setIdentityM(mTranslationMatrix, 0);
 		
 	}
@@ -77,7 +74,7 @@ public class Player extends Custom3D {
 	// rotateIndependent
 	public void rotateI(float angleInDegrees,float x,float y,float z) {				
 		
-		Matrix.rotateM(mRotationMatrix, 0, angleInDegrees, x, y,z);		
+		Matrix.rotateM(mRotationMatrix, 0, angleInDegrees, x, y,z);
 		
 	}	
 	
@@ -123,7 +120,7 @@ public class Player extends Custom3D {
 		
 		Matrix.multiplyMM(mObjectMatrix, 0,mObjectMVPMatrix , 0,mRotationMatrix , 0);
 		
-		return mObjectMVPMatrix;
+		return mObjectMatrix;
 	}
 	
 	@Override
