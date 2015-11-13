@@ -218,6 +218,11 @@ public class GLES20Renderer implements Renderer {
 		
 		this.gameScene = scene;
 		
+	}
+
+	public void onAccelerometerEvent(float[] values) {
+		// TODO Auto-generated method stub
+		
 	}		
 
 }
