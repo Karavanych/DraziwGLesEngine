@@ -18,7 +18,7 @@ public class MaterialCubeMap extends Material {
 	}
 
 	@Override
-	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix) {
+	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix,float timer) {
 		// TODO Auto-generated method stub
 		
 	}

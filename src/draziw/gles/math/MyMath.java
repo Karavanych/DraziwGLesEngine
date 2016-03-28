@@ -48,5 +48,9 @@ public class MyMath {
 		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
 	
+	public static long randomT(int i) {
+		return System.currentTimeMillis()%i;
+	}
+	
 	
 }

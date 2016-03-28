@@ -5,11 +5,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import draziw.gles.engine.ShaderProgram;
+
 import draziw.gles.engine.Texture;
-import draziw.gles.game.GameControllers.Controller;
-import draziw.gles.game.GameControllers.ControllersListener;
-import draziw.gles.materials.Material;
 import draziw.gles.materials.MaterialSprite;
 
 import android.opengl.GLES20;

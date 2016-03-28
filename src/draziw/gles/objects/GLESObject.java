@@ -104,6 +104,19 @@ public abstract class GLESObject {
 		return isAnimated;
 	}
 	
+	public void destroy() {
+		mTexture=null;
+		material=null;
+		mObjectMatrix=null;
+		mObjectMVPMatrix=null;
+		position=null;
+		geometry=null;
+	}
+	
+	
+	public void setMaterial(Material mat) {
+		this.material=mat;
+	}
 	
 	
 	

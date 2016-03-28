@@ -1,12 +1,12 @@
 package draziw.gles.objects;
 
-import com.badlogic.gdx.math.Matrix4;
 
 import android.opengl.Matrix;
+import draziw.gles.controllers.ControllerAccelerometer;
+import draziw.gles.controllers.GameControllers;
+import draziw.gles.controllers.Controller;
 import draziw.gles.engine.Texture;
-import draziw.gles.game.GameControllers;
 import draziw.gles.game.ResourceManager;
-import draziw.gles.game.GameControllers.Controller;
 import draziw.gles.materials.Material;
 import draziw.gles.math.MyMatrix;
 import draziw.gles.math.Quaternion;
@@ -18,8 +18,10 @@ public class Player extends Custom3D {
 	public Collision collision;	
 	
 	public float[] mRotationMatrix = new float[16];
-	private Matrix4 gdxTransform=new Matrix4();	
+
 	private float maxDistance=9999f;
+	
+	protected float[] vec3temp=new float[3];
 
 	public Player(Texture texture,Material material, ResourceManager resources, String modelName) {
 		super(texture,material,resources, modelName);		
@@ -107,12 +109,7 @@ public class Player extends Custom3D {
 		position[0]+=mRotationMatrix[4]*distance;
 		position[1]+=mRotationMatrix[5]*distance;
 		position[2]+=mRotationMatrix[6]*distance;
-	}
-	
-	public Matrix4 getGdxMatrix() {
-		gdxTransform.set(actualizeObjectMatrix());
-		return gdxTransform;		
-	}
+	}	
 	
 	public float[] actualizeObjectMatrix() {
 		Matrix.setIdentityM(mObjectMVPMatrix,0);
@@ -147,7 +144,7 @@ public class Player extends Custom3D {
 		return mRotationMatrix;
 	}	
 	
-	public void moveByController(float timer, GameControllers controllers) {
+	public void moveByController(float timer, GameControllers controllers,int controlType) {
 		Controller controllersLeft = controllers
 				.getControllerByType(GameControllers.CONTROLLER_LEFT);
 		if (controllersLeft.isEnable()) {
@@ -172,7 +169,25 @@ public class Player extends Custom3D {
 				rotateI(-controllersRight.getMovementX() * timer*5,0, 1, 0);
 			}
 		}
+		
 	}
+	
+	public void moveByAccelerometr(float timer,ControllerAccelerometer controller) {
+		if (controller.isEnable()) {			
+			controller.getValues(vec3temp);
+			/*if (vec3temp[0]>0) {
+				vec3temp[0]=Math.max(vec3temp[0], vec3temp[2]);
+			} else {
+				vec3temp[0]=Math.min(vec3temp[0], vec3temp[2]);
+			}*/
+		
+			moveForward(vec3temp[0] * timer);
+			
+			moveRight(vec3temp[1] * timer);
+		}
+	}
+	
+	
 	
 	public void enableCollision(Collision mCollision) {
 		if (mCollision!=null) {

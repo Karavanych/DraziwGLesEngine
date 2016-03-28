@@ -57,17 +57,39 @@ public class ResourceManager {
 	}
 	
 	public void loadSingleModelData(String modelName,boolean override) {
-		if (bufferIndex.get(modelName)==null | override) {
+		if (bufferIndex.get(modelName)==null || override) {
 			final int[] buffers = new int[1];
 			GLES20.glGenBuffers(1, buffers, 0);
 			loadBufferToVBO(modelName,buffers[0]);
 		}
 	}
-
-	private void loadBufferToVBO(String modelName, int vntBufferHolder) {
-				
+	
+	public boolean hasModel(String modelName) {
+		return bufferIndex.get(modelName)!=null;
+	}
+	
+	public void putSingleModelData(String modelName,FloatBuffer vntBuffer,int stride) {		
+		if (bufferIndex.get(modelName)==null) {
+			final int[] buffers = new int[1];
+			GLES20.glGenBuffers(1, buffers, 0);
+			loadBufferToVBO(modelName,buffers[0],vntBuffer,stride);			
+		} else {	
+			int[] buffers = new int[]{bufferIndex.get(modelName)[0]};
+			GLES20.glDeleteBuffers(1,buffers, 0);
+			GLES20.glGenBuffers(1, buffers, 0);
+			loadBufferToVBO(modelName,buffers[0],vntBuffer,stride);
+		}		
+	}
+	
+	
+	public void putSingleModelData(String modelName,FloatBuffer vntBuffer) {		
+		putSingleModelData(modelName,vntBuffer,VNT_STRIDE);
+	}
+	
+	public FloatBuffer loadBuffer(String modelName) {
+		
 		FloatBuffer vntBuffer; // vertex+ normals + texture Buffer, stride 8*4 (8*float)
-								
+		
 		AssetManager assManager = context.getAssets();
 		InputStream is = null;
 		ByteBuffer pointVBB = null;
@@ -83,8 +105,21 @@ public class ResourceManager {
 		vntBuffer=pointVBB.asFloatBuffer();		
 		vntBuffer.position(0);
 		
+		return vntBuffer;
 		
-		int indexCount = (int) (vntBuffer.remaining()*4/VNT_STRIDE);
+	}			
+
+	private void loadBufferToVBO(String modelName, int vntBufferHolder) {
+				
+		FloatBuffer vntBuffer = loadBuffer(modelName); // vertex+ normals + texture Buffer, stride 8*4 (8*float)									
+		
+		loadBufferToVBO(modelName,vntBufferHolder,vntBuffer,VNT_STRIDE);
+					
+	}		
+	
+	private void loadBufferToVBO(String modelName, int vntBufferHolder,FloatBuffer vntBuffer, int stride) {
+		
+		int indexCount = (int) (vntBuffer.remaining()*4/stride);
 				
 		
 		// Bind to the buffer. Future commands will affect this buffer specifically.
@@ -102,25 +137,20 @@ public class ResourceManager {
 		vntBuffer.limit(0);
 		vntBuffer = null;				
 		
-		bufferIndex.put(modelName,new int[]{vntBufferHolder,indexCount});	
-	}		
+		bufferIndex.put(modelName,new int[]{vntBufferHolder,indexCount});
+		
+	}
 	
-	public ByteBuffer readToByteBuffer(InputStream inStream) throws IOException {
-		int bufferSize = 0x20000;
+	public ByteBuffer readToByteBuffer(InputStream inStream) throws IOException {		
+		
+		int bufferSize = inStream.available();;
 	    byte[] buffer = new byte[bufferSize];
-	    ByteArrayOutputStream outStream = new ByteArrayOutputStream(bufferSize);
-	    int read;
-	    while (true) {
-	      read = inStream.read(buffer);
-	      if (read == -1)
-	        break;
-	      outStream.write(buffer, 0, read);
-	    }	    	    
+	    inStream.read(buffer);
+	    inStream.close();    	    
 	    
-
-	    ByteBuffer byteData=ByteBuffer.allocateDirect(outStream.size());
+	    ByteBuffer byteData=ByteBuffer.allocateDirect(bufferSize);
 	    byteData.order(ByteOrder.nativeOrder());
-	    byteData.put(outStream.toByteArray());
+	    byteData.put(buffer);
 	   
 	    byteData.position(0);	   	 	  	    
 	    return byteData;
@@ -133,6 +163,10 @@ public class ResourceManager {
 	
 	public int getVertexCount(String modelName) {
 		return bufferIndex.get(modelName)[1];
+	}
+	
+	public boolean isLoaded(String modelName) {
+		return bufferIndex.get(modelName)!=null;
 	}
 
 	public void confirmBuffers() {
@@ -156,35 +190,29 @@ public class ResourceManager {
 	        	// то она просто переложит элемент по имени
 	        	loadBufferToVBO(pair.getKey(),bufferIdx);	 
 	        	
-	        } else {
-	        	Log.d("MyLogs", "buffer "+pair.getKey()+" is OK!");
 	        }
 	    }
-	    
-	    /*if (indicesToRemove.size()>0) {
-	    
-		    int[] indicesToRemoveArray=new int[indicesToRemove.size()];
-		    
-		    for (int i=0;i<indicesToRemoveArray.length;i++) {
-		    	indicesToRemoveArray[i]=indicesToRemove.get(i);
-		    }	    
-		    
-			GLES20.glDeleteBuffers(indicesToRemoveArray.length,indicesToRemoveArray,0);	
-			
-			indicesToRemoveArray=null;
-		
-			// reload buffers
-			
-			int buffers[] = new int[1];
-			for (int i=0;i<indicesToRemove.size();i++) {								
-				GLES20.glGenBuffers(1, buffers, 0);
-				loadBufferToVBO(namesToRemove.get(i),buffers[0]);				
-			}			
-			
-	    }*/
-		
-		
+	    	    
 	}
 		
+		
 
+
+	public void clearAll() {
+		
+		Iterator<Entry<String, int[]>> it = bufferIndex.entrySet().iterator();
+		int[] indicesToRemove=new int[bufferIndex.size()];
+		
+		int counter=0;
+		
+	    while (it.hasNext()) {
+	        Entry<String, int[]> pair = it.next();
+	        indicesToRemove[counter] = pair.getValue()[0];	        	       
+	        counter++;
+	    }
+	    
+	    GLES20.glDeleteBuffers(indicesToRemove.length,indicesToRemove,0);
+
+	}
+	
 }

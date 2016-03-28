@@ -2,25 +2,29 @@ package draziw.gles.materials;
 
 import android.opengl.GLES20;
 import draziw.gles.engine.ShaderManager;
+import draziw.gles.lights.GLESLight;
 import draziw.gles.objects.GLESObject;
-import draziw.gles.objects.PointLight3D;
 
 public class MaterialNormalMap extends Material {
 
-	public int uLightPos;
+	protected int uLightPos;
 		
-	private PointLight3D glPointLight;
+	protected GLESLight glLight;
 
-	private int uKa;
-	private int uKs;
-	private int uShininess;
-	private int uLightIntensity;
+	protected int uKa;
+	protected int uKs;
+	protected int uShininess;
+	protected int uLightIntensity;
 
-	private float[] materialsParams; // ambientRED,aG,aB,specularRED,sG,sB
-	private float[] lightParams;// light Intensity RED, iG,iB, Shininess 
+	protected float[] materialsParams; // ambientRED,aG,aB,specularRED,sG,sB
+	protected float[] lightParams;// light Intensity RED, iG,iB, Shininess 
 
 	public MaterialNormalMap(ShaderManager shaders) {
 		super(shaders, "normapmappong");		
+	}
+	
+	public MaterialNormalMap(ShaderManager shaders,String shaderName) {
+		super(shaders, shaderName);		
 	}
 
 	@Override
@@ -56,13 +60,13 @@ public class MaterialNormalMap extends Material {
 		lightParams=new float[] {iR,iG,iB,shininess};		
 	}
 
-	public void setLight(PointLight3D glPointLight) {
-		this.glPointLight=glPointLight;				
+	public void setLight(GLESLight glPointLight) {
+		this.glLight=glPointLight;				
 	}	
 
 	@Override
-	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix) {
-		float[] lightPos = glPointLight.getMVPosition(viewMatrix); 
+	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix,float timer) {
+		float[] lightPos = glLight.getMV(viewMatrix); 
 		
 		GLES20.glUniform3f(uLightPos, lightPos[0], lightPos[1], lightPos[2]);
 		GLES20.glUniform3f(uKa, materialsParams[0], materialsParams[1], materialsParams[2]);

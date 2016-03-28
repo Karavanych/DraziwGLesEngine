@@ -1,10 +1,8 @@
 package draziw.gles.engine;
 
-
-
-import draziw.gles.game.GameScene;
+import draziw.gles.game.SceneManager;
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -14,12 +12,19 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
+
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
 
 public class MainGLESActivity extends Activity implements SensorEventListener {
+	
+	public static final int COMMAND_FINISH=0x1;
+	public static final int COMMAND_STOP=0x2;
+	public static final int COMMAND_TEXTURE_LOADED = 0x4;
+	
 	private GLSurfaceView mSurfaceView;
 	private GLES20Renderer mRender;
 	
@@ -30,10 +35,33 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 	private SensorManager mSensorManager;
 	private Sensor accelerometer;
 	
-	private boolean accelerometerEnable=true;
+	private boolean accelerometerEnable=false;
 	
 	public static boolean CAPTURE_VIDEO=false;
+	
+	private Handler handler = new Handler() {
+         @Override
+         public void handleMessage(Message msg) {                 
+        	 switch (msg.what) {
+        	 	case COMMAND_FINISH:
+        	 		RPause=true;// после паузы не должно возобновится        	 		
+        	 		MainGLESActivity.this.finish();
+        	 		break;
+        	 	case COMMAND_STOP:
+        	 		RPause=true;
+        	 		mSurfaceView.onPause();
+        			if (mSensorManager!=null) {
+        				mSensorManager.unregisterListener(MainGLESActivity.this);
+        			} 
+        	 		break;
+        	 	default:           	 		  	 	
+        	 		MainGLESActivity.this.onRenderCommand(msg.what);
+        	 }
+         }
+		
+	 };
 
+	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);		      
@@ -68,7 +96,16 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		}
 
 		// инициализируем свою реализацию Renderer
-		mRender = new GLES20Renderer(this);
+		
+		float accelMaxRange=0;
+		if (accelerometerEnable) {
+			mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+			accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+			accelMaxRange = accelerometer.getMaximumRange();
+		}
+		
+		
+		mRender = new GLES20Renderer(this,accelMaxRange,handler);
 
 		mSurfaceView.setRenderer(mRender);
 
@@ -78,14 +115,14 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		// ставим наш glSurfaceView как корневой View активити.
 		setContentView(mSurfaceView);
 		
-		if (accelerometerEnable) {
-			mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-			accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		}
 	}
 	
-	public void setScene(GameScene scene) {
-		mRender.setScene(scene);
+	public void onRenderCommand(int command) {		
+		
+	}
+
+	public void setSceneManager(SceneManager mng) {
+		mRender.setSceneManager(mng);
 	}
 	
 	@Override
@@ -106,7 +143,13 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		/*if (CAPTURE_VIDEO) {
 			mRender.stopCapturing();
 		}*/
-		super.onBackPressed();
+		//super.onBackPressed();
+		
+		mSurfaceView.queueEvent(new Runnable() {
+			public void run() {
+				mRender.onBackPressed();
+			}
+		});				
 	}
 	
 	void reqRend() {
@@ -153,7 +196,8 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		super.onResume();
 		
 		if (mSensorManager!=null) {
-			mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);			
+			mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+			//enableAccelerometer();
 		}
 		
 		mSurfaceView.onResume();
@@ -172,16 +216,24 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		RPause = true;		
 	}
 
+/*	public void enableAccelerometer() {	
+			mSurfaceView.queueEvent(new Runnable() {
+				public void run() {
+					mRender.onEnableAccelerometer();
+				}
+			});				
+	}*/
+	
 	@Override
 	public void onSensorChanged(final SensorEvent event) {
-		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+		event.sensor.getMaximumRange();
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {			
 			mSurfaceView.queueEvent(new Runnable() {
 				public void run() {
 					mRender.onAccelerometerEvent(event.values);
 				}
 			});
-		}
-		
+		}		
 	}
 
 	@Override
@@ -189,5 +241,12 @@ public class MainGLESActivity extends Activity implements SensorEventListener {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public void enableAccelerometer(boolean val) {
+		accelerometerEnable=val;
+	}
+	
+	
+	
 		
 }

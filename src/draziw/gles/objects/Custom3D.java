@@ -8,19 +8,26 @@ import draziw.gles.materials.Material;
 
 public class Custom3D extends GLESObject {
 
-
-	private int vntBufferHolder;	
-	private int indexCount;		
+	protected static float[] tmpNormalMatrix = new float[9];
 	
+	protected int vntBufferHolder;	
+	protected int indexCount;	
+	
+	boolean isGui=false;
 	
 	//временные
-	float[] mMVMatrix = new float[16];
+	protected float[] mMVMatrix = new float[16];
+
 	
-	private Texture normalMap;
+	public Texture normalMap;
 	
 
 	public Custom3D(Texture texture,Material material,ResourceManager resources,String modelName) {
-		super(texture,material);		
+		super(texture,material);	
+		
+		if (!resources.isLoaded(modelName)) {
+			resources.loadSingleModelData(modelName, false);
+		}
 		
 		indexCount=resources.getVertexCount(modelName);	
 		
@@ -82,13 +89,10 @@ public class Custom3D extends GLESObject {
 		 
 		 Matrix.multiplyMM(mMVMatrix, 0, viewMatrix, 0, mObjectMatrix, 0);
 		 
-		 // над normalMatrix надо бы еще подумать, как-то не очень оптимально
-		 float[] normalMatrix=new float[] {	mMVMatrix[0],mMVMatrix[1],mMVMatrix[2],
-					mMVMatrix[4],mMVMatrix[5],mMVMatrix[6],
-					mMVMatrix[8],mMVMatrix[9],mMVMatrix[10]
-			};// no position, only rotation
+		 setNormalMatrix();
+		 
 			
-		 GLES20.glUniformMatrix3fv(material.uNormalMatrix, 1, false, normalMatrix, 0);
+		 GLES20.glUniformMatrix3fv(material.uNormalMatrix, 1, false, tmpNormalMatrix, 0);
 
 		 
 		 
@@ -137,6 +141,31 @@ public class Custom3D extends GLESObject {
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 	     
 		
+	}
+
+	protected void setNormalMatrix() {
+		/*float[] normalMatrix=new float[] {	mMVMatrix[0],mMVMatrix[1],mMVMatrix[2],
+				mMVMatrix[4],mMVMatrix[5],mMVMatrix[6],
+				mMVMatrix[8],mMVMatrix[9],mMVMatrix[10]
+		};// no position, only rotation */
+		tmpNormalMatrix[0]=mMVMatrix[0];
+		tmpNormalMatrix[1]=mMVMatrix[1];
+		tmpNormalMatrix[2]=mMVMatrix[2];
+		tmpNormalMatrix[3]=mMVMatrix[4];
+		tmpNormalMatrix[4]=mMVMatrix[5];
+		tmpNormalMatrix[5]=mMVMatrix[6];
+		tmpNormalMatrix[6]=mMVMatrix[8];
+		tmpNormalMatrix[7]=mMVMatrix[9];
+		tmpNormalMatrix[8]=mMVMatrix[10];	
+	}
+	
+	public void setGui(boolean mGui) {
+		isGui=mGui;
+	}
+	
+	@Override
+	public boolean isGUI() {		
+		return isGui;
 	}
 
 }

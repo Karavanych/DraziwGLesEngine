@@ -3,16 +3,20 @@ package draziw.gles.engine;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import draziw.gles.controllers.Controller;
+import draziw.gles.controllers.ControllerAccelerometer;
+import draziw.gles.controllers.GameControllers;
 import draziw.gles.game.GLESCamera;
-import draziw.gles.game.GameControllers;
 import draziw.gles.game.GameScene;
 import draziw.gles.game.ResourceManager;
-import draziw.test.project.TestScene;
+import draziw.gles.game.SceneManager;
 
 import android.content.Context;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
+import android.os.Handler;
+
 import android.os.SystemClock;
 
 import android.util.Log;
@@ -20,7 +24,7 @@ import android.view.MotionEvent;
 
 public class GLES20Renderer implements Renderer {
 
-	private Context context;
+	public Context context;
 
 	// private VideoCapture videoCapture;
 	// private Rect videoViewport;
@@ -33,23 +37,30 @@ public class GLES20Renderer implements Renderer {
 	public static final float GAME_SPEED= 0.000000002f;
 
 	// делаем таймер как у usnavii
-	private float timeAnimationInterval = .5f;
-	private long lastTime;
+	public float timeAnimationInterval = .5f;
+	public long lastTime;
 
-	GameScene gameScene;
-	GameControllers gameController;
+	protected GameScene gameScene;
+	protected GameControllers gameController;
 
 	public TextureLoader textureLoader;
 
 	public ResourceManager resources;
 
-	private ShaderManager shaderManager;
+	public ShaderManager shaderManager;
 
-	public GLES20Renderer(Context cc) {
+	public Handler activityHandler;
+
+	public SceneManager sceneManager;
+
+	public GLESCamera camera;
+
+	public GLES20Renderer(Context cc, float accelMaxRange, Handler activityHandler) {
 		context = cc;
-		// this.videoCapture = new VideoCapture(context,new
-		// MyIpProgressListener());
+		gameController = new GameControllers(accelMaxRange); // нужно создавать прям сразу так как евенты от сенсоров идут сразу
+		this.activityHandler=activityHandler;
 	}
+	
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {		
@@ -65,7 +76,8 @@ public class GLES20Renderer implements Renderer {
 		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		textureLoader= new TextureLoader(context);
-		textureLoader.loadTextures();
+		sceneManager.setTextureLoader(textureLoader,true);
+		//textureLoader.loadTextures();
 		
 		resources = new ResourceManager(context);
 		shaderManager = new ShaderManager(context);
@@ -80,16 +92,18 @@ public class GLES20Renderer implements Renderer {
 		this.width = width;
 		this.height = height;
 			
-		//а че тут проверять, если ее нет, пусть падает, без нее всеравно смысла нет запускать
-		//if (gameScene != null) {
+		
+		if (gameScene == null) {
+			gameScene=sceneManager.getMainMenu(context);
+		}
 			
 			if (gameScene.isReady()) {
 				textureLoader.confirmTextures();
 				resources.confirmBuffers();
 			} else {			
-				GLESCamera camera=new GLESCamera(width, height);
-				gameController = new GameControllers(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
-				gameScene.init(context,camera, gameController,textureLoader,resources,shaderManager);
+				camera=new GLESCamera(width, height);
+				gameController.init(width, height,camera.getGlScreenSize()[0],camera.getGlScreenSize()[1]);
+				setScene(gameScene);
 			}
 
 			
@@ -124,16 +138,13 @@ public class GLES20Renderer implements Renderer {
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		//float timer = getAnimationTime(timeAnimationInterval);
-		float timer=getDeltaTime();
-
-		/*
-		 * if (MainActivity.CAPTURE_VIDEO) { // если видеозахват делаем, то
-		 * придется вьюпорт переключать внутри рендера кадра
-		 * GLES20.glViewport(0,0,width,height); }
-		 */
-
-		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-		gameScene.onDrawFrame(timer);
+		
+		//if (gameScene!=null) {
+			float timer=getDeltaTime();			
+	
+			GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+			gameScene.onDrawFrame(timer);
+		//}
 		
 		/*int error = GLES20.glGetError();
 		  if (error != GLES20.GL_NO_ERROR)
@@ -179,13 +190,15 @@ public class GLES20Renderer implements Renderer {
 
 		int pointerIndex = event.getActionIndex();
 		int pointerId = event.getPointerId(pointerIndex);
-		// int pointerCount = event.getPointerCount();
+		int pointerCount = event.getPointerCount();
+		
+		//Log.d("MyLogs"," action="+event.getAction()+" mask="+event.getActionMasked()+" pointerId="+pointerId+" pointerIndex="+pointerIndex+" pointerCount="+pointerCount);
 		
 
 		switch (event.getActionMasked()) {
 		case MotionEvent.ACTION_DOWN:// при одновременном нажатии 2х пальцев это событие
 										// не срабатывает
-			gameController.add(pointerId, event.getX(pointerId),event.getY(pointerId));
+			gameController.add(pointerId, event.getX(pointerIndex),event.getY(pointerIndex));
 			wasActionDown = true;
 			break;
 		case MotionEvent.ACTION_POINTER_DOWN:
@@ -199,11 +212,11 @@ public class GLES20Renderer implements Renderer {
 			gameController.remove(pointerId);
 			break;
 		case MotionEvent.ACTION_UP:
-			gameController.removeAll();
+			gameController.removeAllSticks(pointerId,event.getX(pointerIndex),event.getY(pointerIndex));
 			wasActionDown = false;
 			break;
 		case MotionEvent.ACTION_CANCEL:
-			gameController.removeAll();
+			gameController.removeAllSticks(pointerId,event.getX(pointerIndex),event.getY(pointerIndex));
 			wasActionDown = false;
 			break;
 		case MotionEvent.ACTION_MOVE: // движение
@@ -213,16 +226,55 @@ public class GLES20Renderer implements Renderer {
 
 	}
 
-	public void setScene(GameScene scene) {
-		//TODO если мы будем менять сцену принудительно, надо переделать добавление камеры и контроллера
+	public void setSceneManager(SceneManager sceneManager) {		
 		
-		this.gameScene = scene;
+		this.sceneManager = sceneManager;
+		sceneManager.setRenderer(this);
+		
+	}
+	
+	public void setScene(GameScene scene) {
+		this.gameScene=scene;
+		gameScene.init(context,camera, gameController,textureLoader,resources,shaderManager);
 		
 	}
 
 	public void onAccelerometerEvent(float[] values) {
-		// TODO Auto-generated method stub
+		//if (gameController!=null) {
+			Controller ac =  gameController.getControllerByType(GameControllers.CONTROLLER_ACCELEROMETER);
+			if (ac!=null) ((ControllerAccelerometer)ac).event(values);
+		//}		
+	}
+	
+	public void finish() {	
+		if (activityHandler!=null) activityHandler.sendEmptyMessage(MainGLESActivity.COMMAND_STOP);
+		//gameScene=null;
+		textureLoader.clearAll();
+		resources.clearAll();
+		shaderManager.clear();				
+		camera=null;		
+		if (activityHandler!=null) activityHandler.sendEmptyMessage(MainGLESActivity.COMMAND_FINISH);
+		//gameController.clearAll();	
+	}
+
+
+	public void onBackPressed() {
+		if (sceneManager!=null) {
+			sceneManager.onBackPressed();
+		} else {
+			finish();
+		}
 		
-	}		
+	}
+	
+	public void commandToActivity(int command) {
+		if (activityHandler!=null) activityHandler.sendEmptyMessage(command);
+	}
+
+
+	/*public void onEnableAccelerometer() {
+		gameController.enableController(controllersType, mListener);
+		
+	}	*/	
 
 }

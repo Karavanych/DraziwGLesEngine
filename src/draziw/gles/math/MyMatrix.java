@@ -75,6 +75,14 @@ public class MyMatrix {
 		return txt;		
 	}
 	
+	public static String MatrixToString(float[] mTFA) {
+		String txt="";
+		for (int each=0;each<mTFA.length;each++) {
+			txt+=","+mTFA[each];				
+		}
+		return txt;		
+	}
+	
 	public static String Vector3ToString(float[] mVec) {
 		String txt="";
 		for (int each=0;each<mVec.length;each++) {
@@ -174,7 +182,7 @@ public class MyMatrix {
 		matrix4[M33] = 1.0f;			
 	}
 
-	public void setFromQuaternion (float[] matrix4,float translationX, float translationY, float translationZ,Quaternion quaternion, float scaleX, float scaleY, float scaleZ) {
+	public static void setFromQuaternion (float[] matrix4,float translationX, float translationY, float translationZ,Quaternion quaternion, float scaleX, float scaleY, float scaleZ) {
 			final float xs = quaternion.x * 2f, ys = quaternion.y * 2f, zs = quaternion.z * 2f;
 			final float wx = quaternion.w * xs, wy = quaternion.w * ys, wz = quaternion.w * zs;
 			final float xx = quaternion.x * xs, xy = quaternion.x * ys, xz = quaternion.x * zs;
@@ -200,6 +208,60 @@ public class MyMatrix {
 			matrix4[M32] = 0.f;
 			matrix4[M33] = 1.0f;			
 		}
+	
+	public static void setFromTranslateScale (float[] matrix4,float translationX, float translationY, float translationZ,float scaleX, float scaleY, float scaleZ) {
 
+		matrix4[M00] = scaleX;
+		matrix4[M01] = 0f;
+		matrix4[M02] = 0f;
+		matrix4[M03] = translationX;
+
+		matrix4[M10] = 0f;
+		matrix4[M11] = scaleY;
+		matrix4[M12] = 0f;
+		matrix4[M13] = translationY;
+
+		matrix4[M20] = 0f;
+		matrix4[M21] = 0f;
+		matrix4[M22] = scaleZ;
+		matrix4[M23] = translationZ;
+
+		matrix4[M30] = 0.f;
+		matrix4[M31] = 0.f;
+		matrix4[M32] = 0.f;
+		matrix4[M33] = 1.0f;			
+	}
+	
+	public static float getScaleXSquared (float[] Matrix4) {
+		return Matrix4[M00] * Matrix4[M00] + Matrix4[M01] * Matrix4[M01] + Matrix4[M02] * Matrix4[M02];
+	}
+
+	/** @return the squared scale factor on the Y axis */
+	public static float getScaleYSquared (float[] Matrix4) {
+		return Matrix4[M10] * Matrix4[M10] + Matrix4[M11] * Matrix4[M11] + Matrix4[M12] * Matrix4[M12];
+	}
+
+	/** @return the squared scale factor on the Z axis */
+	public static float getScaleZSquared (float[] Matrix4) {
+		return Matrix4[M20] * Matrix4[M20] + Matrix4[M21] * Matrix4[M21] + Matrix4[M22] * Matrix4[M22];
+	}
+
+	/** @return the scale factor on the X axis (non-negative) */
+	public static float getScaleX (float[] Matrix4) {
+		return (Matrix4[M01]==0 && Matrix4[M02]==0) ? Math.abs(Matrix4[M00])
+			: (float)Math.sqrt(getScaleXSquared(Matrix4));
+	}
+
+	/** @return the scale factor on the Y axis (non-negative) */
+	public static float getScaleY (float[] Matrix4) {
+		return (Matrix4[M10]==0 && Matrix4[M12]==0) ? Math.abs(Matrix4[M11])
+			: (float)Math.sqrt(getScaleYSquared(Matrix4));
+	}
+
+	/** @return the scale factor on the X axis (non-negative) */
+	public static float getScaleZ (float[] Matrix4) {
+		return (Matrix4[M20]==0 && Matrix4[M21]==0) ? Math.abs(Matrix4[M22])
+			: (float)Math.sqrt(getScaleZSquared(Matrix4));
+	}
 	
 }

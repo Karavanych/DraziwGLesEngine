@@ -1,5 +1,4 @@
 attribute vec4 aPosition;
-attribute vec3 aTextureCoord;
 
 varying vec3 vTextureCoord;
 
@@ -7,7 +6,7 @@ uniform mat4 mvp;
 
 void main() {
 	gl_Position = mvp*aPosition;
-	vTextureCoord = aTextureCoord;
+	vTextureCoord = aPosition.xyz;
 }
 
 [FRAGMENT]

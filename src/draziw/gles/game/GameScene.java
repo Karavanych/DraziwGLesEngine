@@ -1,40 +1,41 @@
 package draziw.gles.game;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.util.Log;
 
 
 
 import draziw.gles.animation.AnimationActor;
-import draziw.gles.animation.AnimationActor.AnimationActorListener;
+import draziw.gles.animation.AnimationActorListener;
+import draziw.gles.animation.AnimationActorListener.ActionsAfter;
+import draziw.gles.controllers.GameControllers;
 import draziw.gles.engine.ShaderManager;
 import draziw.gles.engine.TextureLoader;
+import draziw.gles.lights.GLESLight;
 import draziw.gles.materials.Material;
 import draziw.gles.materials.MaterialPixelLight;
 import draziw.gles.materials.MaterialSimpleTexture;
 import draziw.gles.objects.ControllerView;
-import draziw.gles.objects.Cube3D;
 import draziw.gles.objects.Custom3D;
-import draziw.gles.objects.CubeMap3D;
-import draziw.gles.objects.Font2D;
 import draziw.gles.objects.GLESObject;
-import draziw.gles.objects.Plane3D;
 import draziw.gles.objects.Player;
-import draziw.gles.objects.PointLight3D;
-import draziw.gles.objects.Sprite2D;
 
-public abstract class GameScene implements AnimationActorListener {
+public abstract class GameScene implements ActionsAfter {
 	
-	Context context;
+	public SceneManager sceneManager;
+	
+	public Context context;	
 		
 	public ArrayList<GLESObject> sceneLayer=new ArrayList<GLESObject>();	
-	public LinkedList<AnimationActor> actors=new LinkedList<AnimationActor>(); // используется для простых анимаций	
+	public LinkedList<AnimationActor> actors=new LinkedList<AnimationActor>(); // используется для простых анимаций
+	
+	public AnimationActorListener actorsListener;
 	
 	public SceneElements sceneElements;
 	
@@ -49,25 +50,28 @@ public abstract class GameScene implements AnimationActorListener {
 	
 	protected boolean isReady=false;
 
+
+	public abstract void onDrawFrame(float timer);
 	
-	
-	protected GameScene() {
-		
+	protected GameScene(SceneManager sceneManager) {
+		this.sceneManager=sceneManager;
 	}
 	
 	public void init(Context context,GLESCamera camera, GameControllers gameController, TextureLoader mTextureLoader, ResourceManager mResources, ShaderManager mShaders) {
+		
 		this.context=context;
 		this.controllers=gameController;
 		this.camera=camera;		
 		this.textureLoader=mTextureLoader;
 		this.resources=mResources;
 		this.shaders=mShaders;
-				
-		shaders.clear();
-		
+						
+		shaders.clear();		
 		
        
         isReady=true;
+        
+        actorsListener=new AnimationActorListener(this);
 	}
 	
 	public void placeControllers() {
@@ -80,9 +84,9 @@ public abstract class GameScene implements AnimationActorListener {
 		placeScene(glPointLight,sceneElements,sceneLayer);
 	}*/
 	
-	public void loadSceneFromFile(String sceneName,PointLight3D glPointLight) {
+	public void loadSceneFromFile(String sceneName,GLESLight glMainLight) {
 		sceneElements=new SceneElements("scene1",resources);
-		placeScene(glPointLight,sceneElements,sceneLayer);
+		placeScene(glMainLight,sceneElements,sceneLayer);
 	}
 	
 	private void placeControllers(GameControllers gameController,
@@ -103,7 +107,7 @@ public abstract class GameScene implements AnimationActorListener {
 				
 	}
 
-	public void placeScene(PointLight3D glPointLight, SceneElements sceneElements, ArrayList<GLESObject> sceneLayer) {
+	public void placeScene(GLESLight glPointLight, SceneElements sceneElements, ArrayList<GLESObject> sceneLayer) {
 		
 		for (int pos=0;pos<sceneElements.size();pos++) {
 			//for (int pos=13;pos<14;pos++) {
@@ -138,7 +142,6 @@ public abstract class GameScene implements AnimationActorListener {
 			}		
 	}
 
-	public abstract void onDrawFrame(float timer);
 	
 	public void actorsRun(float timer) {
 		ListIterator<AnimationActor> iterator = actors.listIterator();  
@@ -159,8 +162,16 @@ public abstract class GameScene implements AnimationActorListener {
 			if (currentMaterial!=tekObject.material) {
 				currentMaterial=tekObject.material;
 				GLES20.glUseProgram(currentMaterial.shaderProgramHandler);
+				
 				// пока будем передавать матрицу проекции
-				currentMaterial.applyMaterialParams(viewMatrix, camera.getProjectionMatrix());					
+				currentMaterial.applyMaterialParams(viewMatrix, camera.getProjectionMatrix(),timer);
+				
+				/*int error = GLES20.glGetError();
+				if (error != GLES20.GL_NO_ERROR)
+			        {         	
+						Log.e("MyLogs", " material: " + currentMaterial.getClass().getName());  
+			            Log.e("MyLogs", " on draw Error: " + GLU.gluErrorString(error));            
+			        }*/
 			}
 			if (tekObject.isGUI()) {
 				tekObject.draw(camera.getGUIView(),camera.getGUIMatrix(),timer);
@@ -171,76 +182,19 @@ public abstract class GameScene implements AnimationActorListener {
 		
 		return viewMatrix;
 	}
-	/*{
-		
-		// матрицу вида полуваем один раз в цикле отрисовки, потому что она расчетная
-		// каждый раз при вызове getViewMatrix будет пересчитываться
-		
-				
-		gameLogicsFrame(timer);
-		
-		
-		float[] viewMatrix = camera.getViewMatrix();
-		
-		
-		
-		//player.moveByController(timer, controllers);
-		
-		//camera.setPositionByGLESObject(player);
-		glPointLight.setPositionM(camera.position[0],camera.position[1],camera.position[2]);
-		
-		for (GLESObject tekObject:sceneLayer) {
-			GLES20.glUseProgram(tekObject.getShaderProgramInstance().programHandler);	
-			if (tekObject.isGUI()) {
-				tekObject.draw(camera.getGUIView(),camera.getGUIMatrix(),timer);
-			} else {
-				tekObject.draw(viewMatrix,camera.getProjectionMatrix(),timer);
-			}
-		}
-				
-		
-		if (cubeMap!=null) {
-			cubeMap.rotateM(0.1f, 0f, 1f, 0f);
-		}
-		
-		if (glPointLight!=null) {	
-			lightMoveDirectionCount--;
-			if (lightMoveDirectionCount<0) {
-				lightMoveDirectionCount=300;
-				lightMoveDirection*=-1;
-			}
-			glPointLight.translateM(0,0,-0.01f*lightMoveDirection);
-		}*/
-		
-		//Matrix.rotateM(viewMatrix, 0, 0.1f, 0f, 1f, 0f);
-		
-		/*angle+=0.2f;
-		glRectangle1.resetMatrix();
-		glRectangle1.moveBack();		
-		glRectangle1.scaleByGeometri();
-		glRectangle1.rotate(angle, 0.5f, 1f, 0f);
-		
-		//GLES20.glDisable(GLES20.GL_BLEND);
-			
-	}*/
 	
-	/*public void gameLogicsFrame(float timer) {
-		// сначала перемещаем камеру, если надо, потом получаем матрицу вида
-				//camera.moveByController(timer,controllers);
-				
-			   	 final float delta = Math.min(1f/30f, timer);
-			
-			     if (!collision) {
-			    	 player.translateM(0f, -delta, 0f);			         						         
-			     }
-			     playerCollisionObject.setWorldTransform(player.getGdxMatrix());
-			     collision = checkCollision();
-			    //player.actualizeObjectMatrix();
-				player.moveByController(timer, controllers);
-				
-				camera.setByPlayerTranslateRotation(player);
-		
-	}*/
+	
+	public void sceneLayerAdd(GLESObject... glesObjects) {
+		for (GLESObject each:glesObjects) {
+			sceneLayer.add(each);
+		}	
+	}
+	
+	public void sceneLayerRemove(GLESObject... glesObjects) {
+		for (GLESObject each:glesObjects) {
+			sceneLayer.remove(each);
+		}	
+	}
 	
 	private void clearPrograms() {	
 		// при повороте activity, нужно пересоздавать сингтоны shaderProgram
@@ -285,15 +239,29 @@ public abstract class GameScene implements AnimationActorListener {
 	    collisionConfig.dispose();
 	}*/
 
-	public boolean isReady() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isReady() {		
+		return isReady;
 	}
 	
-	@Override
-	public void onAnimationEnd(AnimationActor mActor) {
+	public void destroy() {
 		
+        Iterator<AnimationActor> ait = actors.iterator();
+        while (ait.hasNext()) {
+	        	ait.next().destroy();
+	        	ait.remove();               
+            }
+		
+		player=null;
+		
+		Iterator<GLESObject> it = sceneLayer.iterator();
+        while (it.hasNext()) {
+        		it.next().destroy();
+                it.remove();               
+            }        		             
 	}
+	
+	
+	
 
 	
 	   

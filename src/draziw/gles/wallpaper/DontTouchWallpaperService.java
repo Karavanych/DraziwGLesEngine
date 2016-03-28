@@ -8,6 +8,6 @@ import android.opengl.GLSurfaceView.Renderer;
 public class DontTouchWallpaperService extends OpenGLES2WallpaperService {
 	@Override
 	Renderer getNewRenderer() {
-		return new GLES20Renderer((Context)this);
+		return new GLES20Renderer((Context)this,0,null);
 	}
 }

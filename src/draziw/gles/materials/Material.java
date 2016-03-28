@@ -30,7 +30,7 @@ public abstract class Material {
 		
 	public abstract void initializeShaderParam();
 	
-	public abstract void applyMaterialParams(float[] viewMatrix,float[] projectionMatrix);
+	public abstract void applyMaterialParams(float[] viewMatrix,float[] projectionMatrix, float timer);
 	public abstract void applyObjectParams(float[] viewMatrix,float[] projectionMatrix,GLESObject mObject);
 	
 	private HashMap<String,Integer> confirmationMap;// uniforms and attributes holders	

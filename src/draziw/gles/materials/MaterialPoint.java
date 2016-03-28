@@ -48,7 +48,7 @@ public class MaterialPoint extends Material {
 	}
 
 	@Override
-	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix) {
+	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix,float timer) {
 		
 		 GLES20.glVertexAttribPointer(aColor, 4, GLES20.GL_FLOAT, false, 0, colorBuffer);
 	     GLES20.glEnableVertexAttribArray(aColor);

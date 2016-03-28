@@ -55,7 +55,7 @@
 	
 	vec3 phongModel( vec3 norm, vec3 diffR ) {
 	    vec3 r = reflect( -vLightVector, norm );
-	    vec3 ambient = uLightIntensity * uKa;
+	    vec3 ambient = uLightIntensity * uKa*diffR;
 	    float sDotN = max( dot(vLightVector, norm), 0.0 );
 	    vec3 diffuse = uLightIntensity * diffR * sDotN;
 	

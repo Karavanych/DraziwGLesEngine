@@ -1,6 +1,7 @@
 package draziw.gles.game;
 
-import draziw.gles.game.GameControllers.Controller;
+import draziw.gles.controllers.GameControllers;
+import draziw.gles.controllers.Controller;
 import draziw.gles.math.MyMatrix;
 import draziw.gles.objects.GLESObject;
 import draziw.gles.objects.Player;
@@ -11,6 +12,8 @@ public class GLESCamera {
 
 	// зададим матрицы
 	private float[] mProjectionMatrix = new float[16]; // проекция
+	private float[] mProjectionMatrix2 = new float[16];
+	
 	private float[] mOrthoGUI = new float[16]; // проекция для gui
 	private float[] viewGUI = new float[16];
 
@@ -23,19 +26,19 @@ public class GLESCamera {
 
 	public float[] position = new float[3];
 
-	/*public float[] forward = new float[3];
+	private float[] forward = new float[3];
 
-	public float[] up = new float[3];
+	private float[] up = new float[3];
 
-	public float[] right = new float[3];*/
+	private float[] right = new float[3];
 		
 	int width;
 	int height;	
 	
 	public float[] glScreenSize=new float[2];
 	
-	private float toPlayerDistanceZ=2.5f;
-	private float toPlayerDistanceU=2f;
+	private float toPlayerDistanceZ;
+	private float toPlayerDistanceU;
 
 	public GLESCamera(int width, int height) {
 		this.width = width;
@@ -121,6 +124,10 @@ public class GLESCamera {
 		Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near,
 				far);
 		
+		float proj2ratio=0.5f;
+		Matrix.frustumM(mProjectionMatrix2, 0, left*proj2ratio, right*proj2ratio, bottom*proj2ratio, top*proj2ratio, near,
+				far);
+		
 		
 		
 		Matrix.orthoM(mOrthoGUI, 0, left,right, bottom, top, near, far);
@@ -176,6 +183,10 @@ public class GLESCamera {
 	public float[] getProjectionMatrix() {
 		return mProjectionMatrix;
 	}
+	
+	public float[] getProjectionMatrix2() {
+		return mProjectionMatrix2;
+	}
 
 
 
@@ -213,6 +224,14 @@ public class GLESCamera {
 		position[2]+=viewMatrix[10]*distance;
 		//MyMatrix.vec3add(position, forward, distance);
 	}
+	
+	public float[] getForward(float distance) {
+		forward[0]=viewMatrix[2]*distance;
+		forward[1]=viewMatrix[6]*distance;
+		forward[2]=viewMatrix[10]*distance;
+		return forward;
+		//return new float[]{viewMatrix[2]*distance,viewMatrix[6]*distance,viewMatrix[10]*distance};
+	}
 
 	public void moveRight(float distance) {
 		position[0]+=viewMatrix[0]*distance;
@@ -220,12 +239,28 @@ public class GLESCamera {
 		position[2]+=viewMatrix[8]*distance;
 		//MyMatrix.vec3add(position, right, distance);
 	}
+	
+	public float[] getRight(float distance) {
+		right[0]=viewMatrix[0]*distance;
+		right[1]=viewMatrix[4]*distance;
+		right[2]=viewMatrix[8]*distance;
+		return right;
+		//return new float[]{viewMatrix[0]*distance,viewMatrix[4]*distance,viewMatrix[8]*distance};
+	}
 
 	public void moveUp(float distance) {
 		position[0]+=viewMatrix[1]*distance;
 		position[1]+=viewMatrix[5]*distance;
 		position[2]+=viewMatrix[9]*distance;
 		//MyMatrix.vec3add(position, up, distance);
+	}
+	
+	
+	public float[] getUp(float distance) {
+		up[0]=viewMatrix[1]*distance;
+		up[1]=viewMatrix[5]*distance;
+		up[2]=viewMatrix[9]*distance;
+		return up;
 	}
 
 	public void rotate(float angle,float x, float y, float z) { // x - right, y - up , z - forward
@@ -290,6 +325,11 @@ public class GLESCamera {
 		position[0]=x;
 		position[1]=y;
 		position[2]=z;		
+	}
+	
+	public void setToPlayerDistance(float z,float u) {
+		this.toPlayerDistanceZ=z;//=2.5f;
+		this.toPlayerDistanceU=u;//=2f;
 	}
 	
 	

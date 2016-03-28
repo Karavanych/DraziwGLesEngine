@@ -2,15 +2,16 @@ package draziw.gles.materials;
 
 import android.opengl.GLES20;
 import draziw.gles.engine.ShaderManager;
+import draziw.gles.lights.GLESLight;
+import draziw.gles.lights.PointLight3D;
 import draziw.gles.objects.GLESObject;
-import draziw.gles.objects.PointLight3D;
 
 public class MaterialPixelLight extends Material {
 
 	public int uLightPos;
 	public int uLuminance;
 		
-	private PointLight3D glPointLight;
+	private GLESLight glPointLight;
 	private float mLuminance;
 
 	public MaterialPixelLight(ShaderManager shaders) {
@@ -37,9 +38,9 @@ public class MaterialPixelLight extends Material {
 		uLuminance = glGetUniformLocation(shaderProgramHandler, "uLuminance");		
 	}
 
-	public void setLight(PointLight3D glPointLight) {
+	public void setLight(GLESLight glPointLight) {
 		this.glPointLight=glPointLight;		
-		this.mLuminance=glPointLight.getLuminance();
+		this.mLuminance=0.05f;
 	}	
 	
 	public void setLuminance(float luminance) {
@@ -47,8 +48,8 @@ public class MaterialPixelLight extends Material {
 	}
 
 	@Override
-	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix) {
-		float[] lightPos = glPointLight.getMVPosition(viewMatrix); 
+	public void applyMaterialParams(float[] viewMatrix, float[] projectionMatrix,float timer) {
+		float[] lightPos = glPointLight.getMV(viewMatrix); 
 		GLES20.glUniform3f(uLightPos, lightPos[0], lightPos[1], lightPos[2]);
 		GLES20.glUniform1f(uLuminance,mLuminance);
 		

@@ -22,10 +22,18 @@ public class CubeMap3D extends GLESObject {
 	private int indexCount;	
 		
 	//временные
-	float[] mMVMatrix = new float[16];	
+	float[] mMVMatrix = new float[16];
+	
+	public static float[] tmpView = new float[16];
 
-	public CubeMap3D(Texture texture,Material material,Context context) {
-		super(texture,material);	
+	public CubeMap3D(Texture texture,Material material) {
+		super(texture,material);
+		
+		tmpView[3] = 0.0f;
+		tmpView[7] = 0.0f;
+		tmpView[11] = 0.0f;
+		tmpView[15] = 1.0f;
+		
 		
 		float[] faces   =  {  1.0f,  1.0f,  1.0f,    -1.0f,  1.0f,  1.0f,    -1.0f, -1.0f,  1.0f,     1.0f, -1.0f,  1.0f,
                 1.0f,  1.0f,  1.0f,     1.0f, -1.0f,  1.0f,     1.0f, -1.0f, -1.0f,     1.0f,  1.0f, -1.0f,
@@ -80,6 +88,7 @@ public class CubeMap3D extends GLESObject {
 		indexCount=verticesIndex.remaining();		
 		verticesIndex.position(0);
 		
+		
 	}
 
 /*	@Override
@@ -101,11 +110,22 @@ public class CubeMap3D extends GLESObject {
 	}*/
 	
 	
-	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {		     	                       
+	public void draw(float[] viewMatrix,float[] projectionMatrix, float timer) {
+		
+		tmpView[0]=viewMatrix[0];
+		tmpView[4]=viewMatrix[4];
+		tmpView[8]=viewMatrix[8];
+		tmpView[1]=viewMatrix[1];
+		tmpView[5]=viewMatrix[5];
+		tmpView[9]=viewMatrix[9];
+		tmpView[2]=viewMatrix[2];
+		tmpView[6]=viewMatrix[6];
+		tmpView[10]=viewMatrix[10];
+		
 		 
 		 Matrix.setIdentityM(mMVMatrix,0);		
 		 
-		 Matrix.multiplyMM(mMVMatrix, 0, viewMatrix, 0, mObjectMatrix, 0);		 		 
+		 Matrix.multiplyMM(mMVMatrix, 0, tmpView, 0, mObjectMatrix, 0);		 		 
 		 
 		 Matrix.multiplyMM(mObjectMVPMatrix, 0, projectionMatrix, 0, mMVMatrix, 0);
 		 

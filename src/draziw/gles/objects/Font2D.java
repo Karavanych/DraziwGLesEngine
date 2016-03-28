@@ -184,7 +184,8 @@ public class Font2D extends GLESObject{
 		"ABCDEFGHIJKLMNOP",
 		"QRSTUVWXYZabcdef",
 		"ghijklmnopqrstuv",
-		"wxyz0123456789 #"				
+		"wxyz0123456789 #",
+		",.-+!@$%^&*()=~`"
 		};
 	
 	public static int[] getSimbolPosition(String simbol) {

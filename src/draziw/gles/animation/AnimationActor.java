@@ -1,13 +1,10 @@
 package draziw.gles.animation;
 
+import java.util.ArrayList;
+
 import draziw.gles.objects.GLESObject;
 
 public abstract class AnimationActor {
-
-	public interface AnimationActorListener {
-		public void onAnimationEnd(AnimationActor actor);
-	}
-
 
 	protected GLESObject obj;	
 	protected AnimationActorListener listener;
@@ -25,11 +22,13 @@ public abstract class AnimationActor {
 	protected float ey;
 	protected float ez;
 	
-	float timeLeft;
-	float timeEnd;
-	float delay=0;
+	protected float timeLeft;
+	protected float timeEnd;
+	protected float delay=0;
 	
-	boolean reverse=false;
+	protected boolean reverse=false;
+	
+	protected String tag;
 
 
 	public AnimationActor(GLESObject mGLESObject,
@@ -37,9 +36,21 @@ public abstract class AnimationActor {
 		this.obj = mGLESObject;		
 		this.listener = listener;
 		
-		mGLESObject.setAnimated(true);
+		mGLESObject.setAnimated(true);				
 	}
 
+	/* @param delay - задает задержку перед анимацией
+	 * 
+	 */
+	
+	public void setTag(String tag) {
+		this.tag=tag;
+	}
+	
+	public boolean isTag(String tag) {
+		return tag==this.tag;	
+	}
+	
 	public void setDelay(float delay) {
 		this.delay=delay;		
 	}
@@ -59,7 +70,17 @@ public abstract class AnimationActor {
 	public void end() {
 		obj.setAnimated(false);
 		isRun = false;
-		destroy=true;		
+		destroy=true;
+		if (listener!=null) listener.onAnimationEnd(tag,obj);
+	}
+	
+	public boolean isObject(GLESObject mObj) {
+		return obj==mObj?true:false;		
+	}
+	
+	public void destroy() {
+		obj=null;
+		listener=null;
 	}
 
 }

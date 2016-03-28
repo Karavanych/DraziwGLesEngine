@@ -13,10 +13,10 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import draziw.gles.controllers.Controller;
 import draziw.gles.engine.ShaderProgram;
 import draziw.gles.engine.Texture;
 import draziw.gles.game.ResourceManager;
-import draziw.gles.game.GameControllers.Controller;
 import draziw.gles.materials.Material;
 
 public class ControllerView extends GLESObject {
