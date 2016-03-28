@@ -1,0 +1,71 @@
+	attribute vec4 aPosition;
+	attribute vec2 aTextureCoord;
+	attribute vec3 aNormal;
+	
+	varying vec2 vTextureCoord;	
+	
+	varying vec3 phongLight;
+	varying vec3 phongSpecular;
+	
+	uniform mat4 m,v, mvp; // model, view matrix
+	
+	uniform mat3 uNormalMatrix;
+	
+	uniform vec3 uLightPos;
+	
+	uniform vec2 uVec2TextureOffset;
+	
+	uniform vec3 uLightIntensity;
+	uniform vec3 uKs; //specular
+	uniform vec3 uKa; //ambient
+	uniform float uShininess;
+	
+	
+	void phongModel( vec3 norm, vec3 vViewDir) {
+	    vec3 r = reflect( -uLightPos, norm );
+	    vec3 ambient = uLightIntensity * uKa;
+	    float sDotN = max( dot(uLightPos, norm), 0.0 );
+	    vec3 diffuse = uLightIntensity * sDotN;
+	
+	    vec3 spec = vec3(0.0);
+	    if( sDotN > 0.0 )
+	        spec = uLightIntensity * uKs *
+	               pow( max( dot(r,vViewDir), 0.0 ), uShininess );
+	
+	    phongLight = ambient + diffuse;
+	    phongSpecular = spec;
+	}
+	
+	void main() {
+	
+		vec3 mPosition = vec3(v*m * aPosition);		
+		
+		vTextureCoord = aTextureCoord+uVec2TextureOffset;		
+			
+		gl_Position = mvp * aPosition;
+				
+		vec3 viewDir = normalize(-mPosition);
+		
+		vec3 normals = normalize(uNormalMatrix * aNormal);
+						
+		phongModel(normals,viewDir);
+	         		
+	}						
+
+[FRAGMENT]
+
+	precision mediump float;
+
+	varying vec2 vTextureCoord;
+
+	varying vec3 phongLight;
+	varying vec3 phongSpecular;
+	
+	uniform sampler2D uBaseMap;
+	
+	void main() {			 			 					
+				
+			vec4 texColor = texture2D(uBaseMap,vTextureCoord);
+			gl_FragColor = vec4(phongLight*texColor.rgb+phongSpecular, 1.0 );
+								
+	}
